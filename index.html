@@ -22,6 +22,7 @@
   --accent:#D7F24C;
   --accent-dim:#8B9A3A;
   --iron:#E2603B;
+  --iron-dim:#5C3527;
   --radius:10px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -48,6 +49,12 @@ header{
   flex:1;background:var(--surface);border:0.5px solid var(--border);color:var(--text);
   border-radius:var(--radius);padding:9px 10px;font-family:'IBM Plex Mono',monospace;font-size:14px;
 }
+.reset-btn{
+  background:none;border:0.5px solid var(--iron-dim);color:var(--iron);
+  border-radius:var(--radius);padding:9px 12px;font-size:13px;white-space:nowrap;cursor:pointer;
+  font-family:'Inter',sans-serif;
+}
+.reset-btn:active{transform:scale(0.96)}
 .day-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .day-tab{
   background:var(--surface);border:0.5px solid var(--border);color:var(--text-2);
@@ -99,7 +106,7 @@ main{padding:16px}
 .ctrl-btn:active{transform:scale(0.96)}
 .set-count{font-size:12px;color:var(--text-3);font-family:'IBM Plex Mono',monospace;min-width:44px;text-align:center}
 
-.quick-tags{display:flex;gap:6px;margin-top:10px}
+.quick-tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
 .tag-btn{
   background:var(--surface-2);border:0.5px solid var(--border);color:var(--text-2);
   border-radius:var(--radius);padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;
@@ -158,6 +165,7 @@ main{padding:16px}
   <p class="brand-sub">오늘의 무게와 횟수를 기록하세요</p>
   <div class="date-row">
     <input type="date" id="dateInput">
+    <button type="button" class="reset-btn" id="resetBtn">초기화</button>
   </div>
   <div class="day-tabs" id="dayTabs"></div>
 </header>
@@ -338,6 +346,29 @@ function makeChip(i, ex, sv){
   return chip;
 }
 
+function copyFirstSet(ex, grid){
+  const chips = Array.from(grid.querySelectorAll('.set-chip'));
+  const groups = ex.uni
+    ? [ chips.filter((_,idx)=>idx%2===0), chips.filter((_,idx)=>idx%2===1) ]
+    : [ chips ];
+  groups.forEach(group=>{
+    if(group.length < 2) return;
+    const source = group[0];
+    const srcWeight = source.querySelector('input[data-field="weight"]');
+    const srcReps = source.querySelector('input[data-field="reps"]');
+    for(let idx=1; idx<group.length; idx++){
+      const target = group[idx];
+      const tW = target.querySelector('input[data-field="weight"]');
+      const tR = target.querySelector('input[data-field="reps"]');
+      if(srcWeight && tW) tW.value = srcWeight.value;
+      if(srcReps && tR) tR.value = srcReps.value;
+      if((tW && tW.value) || (tR && tR.value)) target.classList.add('done');
+      else target.classList.remove('done');
+    }
+  });
+  markDirty();
+}
+
 function weekdayToDay(dateStr){
   const wd = new Date(dateStr+'T00:00:00').getDay();
   if(wd===1) return 'mon';
@@ -435,11 +466,12 @@ async function renderMain(){
           <span class="set-count">${currentTotal}세트</span>
           <button type="button" class="ctrl-btn" data-action="add" aria-label="세트 추가">+ 세트</button>
         </div>
-        ${ex.isTime ? '' : `
         <div class="quick-tags">
+          ${ex.isTime ? '' : `
           <button type="button" class="tag-btn" data-tag="맨몸">전체 맨몸</button>
-          <button type="button" class="tag-btn" data-tag="빈바">전체 빈바</button>
-        </div>`}
+          <button type="button" class="tag-btn" data-tag="빈바">전체 빈바</button>`}
+          <button type="button" class="tag-btn" data-action="copy-first">1세트 값 복사</button>
+        </div>
       `;
       const grid = card.querySelector('.set-grid');
       const countLabel = card.querySelector('.set-count');
@@ -470,6 +502,10 @@ async function renderMain(){
 
       card.querySelectorAll('.tag-btn').forEach(tagBtn=>{
         tagBtn.addEventListener('click', ()=>{
+          if(tagBtn.dataset.action === 'copy-first'){
+            copyFirstSet(ex, grid);
+            return;
+          }
           const tag = tagBtn.dataset.tag;
           grid.querySelectorAll('input[data-field="weight"]').forEach(w=>{
             w.value = tag;
@@ -542,6 +578,17 @@ document.getElementById('dateInput').addEventListener('change', (e)=>{
   const auto = weekdayToDay(state.date);
   if(auto) state.day = auto;
   loadAndRender();
+});
+
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  const dayLabel = ROUTINES[state.day].label.split(' · ')[1];
+  const ok = confirm(`${state.date} (${dayLabel}) 기록을 전체 초기화할까요?\n되돌릴 수 없습니다.`);
+  if(!ok) return;
+  try{
+    await storage.delete(keyFor(state.day, state.date));
+  }catch(e){}
+  await loadAndRender();
+  document.getElementById('saveStatus').textContent = '초기화됨';
 });
 
 document.getElementById('historyToggle').addEventListener('click', async ()=>{
