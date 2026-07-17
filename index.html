@@ -266,7 +266,6 @@ const ROUTINES = {
 const DAY_ORDER = ['mon','tue','thu','sat'];
 
 let state = { day:'mon', date: todayStr() };
-let saveTimer = null;
 
 function todayStr(){
   const d = new Date();
@@ -395,7 +394,7 @@ async function renderMain(){
         chip.querySelectorAll('input').forEach(inp=>{
           inp.addEventListener('input', ()=>{
             if(inp.value) chip.classList.add('done'); else if(!chip.querySelector('input[data-field="weight"]')?.value && !chip.querySelector('input[data-field="reps"]')?.value) chip.classList.remove('done');
-            scheduleSave();
+            markDirty();
           });
         });
       }
@@ -418,17 +417,14 @@ async function renderMain(){
       <input type="number" inputmode="numeric" id="cardioInput" placeholder="분" value="${existing.cardio||''}">
     `;
     main.appendChild(row);
-    row.querySelector('#cardioInput').addEventListener('input', scheduleSave);
+    row.querySelector('#cardioInput').addEventListener('input', markDirty);
   }
 
-  status.textContent = '자동 저장됨';
+  status.textContent = '저장하기를 눌러 기록하세요';
 }
 
-function scheduleSave(){
-  const status = document.getElementById('saveStatus');
-  status.textContent = '저장 중...';
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveNow, 400);
+function markDirty(){
+  document.getElementById('saveStatus').textContent = '변경됨 · 저장 필요';
 }
 
 async function saveNow(){
@@ -553,7 +549,6 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
 
 document.getElementById('saveBtn').addEventListener('click', async ()=>{
   const btn = document.getElementById('saveBtn');
-  clearTimeout(saveTimer);
   btn.disabled = true;
   btn.textContent = '저장 중...';
   await saveNow();
