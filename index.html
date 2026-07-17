@@ -100,13 +100,20 @@ main{padding:16px}
 .save-bar{
   position:fixed;bottom:0;left:0;right:0;background:var(--bg);
   border-top:0.5px solid var(--border);padding:10px 16px calc(10px + env(safe-area-inset-bottom));
-  display:flex;gap:8px;align-items:center;justify-content:space-between;
+  display:flex;flex-direction:column;gap:8px;
 }
-.save-status{font-size:12px;color:var(--text-2);font-family:'IBM Plex Mono',monospace}
-.backup-btns{display:flex;gap:6px}
+.save-row{display:flex;align-items:center;gap:10px}
+.save-primary{
+  flex:1;background:var(--accent);border:none;color:#1A1D0A;
+  border-radius:var(--radius);padding:12px;font-size:14px;font-weight:600;cursor:pointer;
+  font-family:'Inter',sans-serif;
+}
+.save-primary:active{transform:scale(0.98)}
+.save-status{font-size:12px;color:var(--text-2);font-family:'IBM Plex Mono',monospace;white-space:nowrap}
+.backup-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .backup-btn{
   background:none;border:0.5px solid var(--border-strong);color:var(--text-2);
-  border-radius:var(--radius);padding:6px 10px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;
+  border-radius:var(--radius);padding:8px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;
 }
 
 .history-toggle{
@@ -145,7 +152,10 @@ main{padding:16px}
 </div>
 
 <div class="save-bar">
-  <span class="save-status" id="saveStatus">불러오는 중...</span>
+  <div class="save-row">
+    <button class="save-primary" id="saveBtn">저장하기</button>
+    <span class="save-status" id="saveStatus">불러오는 중...</span>
+  </div>
   <div class="backup-btns">
     <button class="backup-btn" id="exportBtn">내보내기</button>
     <button class="backup-btn" id="importBtn">가져오기</button>
@@ -539,6 +549,16 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
   };
   reader.readAsText(file);
   e.target.value = '';
+});
+
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('saveBtn');
+  clearTimeout(saveTimer);
+  btn.disabled = true;
+  btn.textContent = '저장 중...';
+  await saveNow();
+  btn.textContent = '✓ 저장됨';
+  setTimeout(()=>{ btn.textContent = '저장하기'; btn.disabled = false; }, 1000);
 });
 
 (function init(){
