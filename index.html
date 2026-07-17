@@ -306,7 +306,7 @@ function todayStr(){
 function formatDateLabel(dateStr){
   const d = new Date(dateStr+'T00:00:00');
   const week = ['일','월','화','수','목','금','토'];
-  return `${d.getMonth()+1}.${d.getDate()}.'${week[d.getDay()]}'`;
+  return `${d.getMonth()+1}.${d.getDate()}.${week[d.getDay()]}`;
 }
 
 function fmtWeight(w){
