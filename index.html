@@ -77,16 +77,34 @@ main{padding:16px}
 .set-chip{
   display:flex;flex-direction:column;align-items:center;gap:5px;
   background:var(--surface-2);border:0.5px solid var(--border);border-radius:var(--radius);
-  padding:8px 6px;width:74px;
+  padding:8px 6px;width:92px;
 }
 .set-chip.done{border-color:var(--accent-dim)}
 .set-chip-label{font-size:10px;color:var(--text-3);letter-spacing:0.4px}
 .set-chip input{
-  width:100%;background:transparent;border:none;color:var(--text);text-align:center;
-  font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;padding:2px 0;
+  background:transparent;border:none;color:var(--text);text-align:right;
+  font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;padding:2px 0;width:34px;
 }
 .set-chip input::placeholder{color:var(--text-3);font-weight:500}
 .set-chip .divider{height:0.5px;background:var(--border);width:100%}
+.field-row{display:flex;align-items:baseline;justify-content:center;gap:3px;width:100%}
+.unit{font-size:10px;color:var(--text-3)}
+
+.set-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
+.ctrl-btn{
+  background:var(--surface-2);border:0.5px solid var(--border);color:var(--text-2);
+  border-radius:var(--radius);padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;
+  font-family:'Inter',sans-serif;
+}
+.ctrl-btn:active{transform:scale(0.96)}
+.set-count{font-size:12px;color:var(--text-3);font-family:'IBM Plex Mono',monospace;min-width:44px;text-align:center}
+
+.quick-tags{display:flex;gap:6px;margin-top:10px}
+.tag-btn{
+  background:var(--surface-2);border:0.5px solid var(--border);color:var(--text-2);
+  border-radius:var(--radius);padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;
+}
+.tag-btn:active{transform:scale(0.97)}
 
 .cardio-row{
   background:var(--surface);border:0.5px solid var(--border);border-radius:12px;
@@ -272,6 +290,54 @@ function todayStr(){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
+function fmtWeight(w){
+  if(!w) return '-';
+  return /^[0-9.]+$/.test(w) ? w+'kg' : w;
+}
+
+function makeChip(i, ex, sv){
+  const chip = document.createElement('div');
+  chip.className = 'set-chip';
+  let labelText;
+  if(ex.uni){
+    const side = i%2===0 ? '좌' : '우';
+    const num = Math.floor(i/2)+1;
+    labelText = side+num;
+  } else {
+    labelText = 'SET '+(i+1);
+  }
+  if(ex.isTime){
+    chip.innerHTML = `
+      <span class="set-chip-label">${labelText}</span>
+      <div class="field-row">
+        <input type="number" inputmode="numeric" placeholder="0" value="${sv.reps||''}" data-field="reps" data-idx="${i}">
+        <span class="unit">초</span>
+      </div>
+    `;
+  } else {
+    chip.innerHTML = `
+      <span class="set-chip-label">${labelText}</span>
+      <div class="field-row">
+        <input type="text" inputmode="decimal" placeholder="0" value="${sv.weight||''}" data-field="weight" data-idx="${i}">
+        <span class="unit">kg</span>
+      </div>
+      <div class="divider"></div>
+      <div class="field-row">
+        <input type="number" inputmode="numeric" placeholder="0" value="${sv.reps||''}" data-field="reps" data-idx="${i}">
+        <span class="unit">회</span>
+      </div>
+    `;
+  }
+  if(sv.weight || sv.reps) chip.classList.add('done');
+  chip.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      if(inp.value) chip.classList.add('done'); else if(!chip.querySelector('input[data-field="weight"]')?.value && !chip.querySelector('input[data-field="reps"]')?.value) chip.classList.remove('done');
+      markDirty();
+    });
+  });
+  return chip;
+}
+
 function weekdayToDay(dateStr){
   const wd = new Date(dateStr+'T00:00:00').getDay();
   if(wd===1) return 'mon';
@@ -344,15 +410,17 @@ async function renderMain(){
     for(const ex of group.exercises){
       const card = document.createElement('div');
       card.className = 'ex-card';
-      const totalSets = ex.uni ? ex.sets*2 : ex.sets;
-      const savedSets = (existing.exercises[ex.id]) || Array.from({length:totalSets},()=>({weight:'',reps:''}));
+      const defaultTotal = ex.uni ? ex.sets*2 : ex.sets;
+      const minTotal = ex.uni ? 2 : 1;
+      const savedSets = existing.exercises[ex.id] || Array.from({length:defaultTotal},()=>({weight:'',reps:''}));
+      let currentTotal = savedSets.length >= minTotal ? savedSets.length : minTotal;
 
       let lastLine = '';
       const last = await getLastValue(state.day, ex.id, state.date);
       if(last){
         lastLine = ex.isTime
           ? `지난번(${last.date.slice(5)}) ${last.reps||'-'}초`
-          : `지난번(${last.date.slice(5)}) ${last.weight||'-'}kg × ${last.reps||'-'}회`;
+          : `지난번(${last.date.slice(5)}) ${fmtWeight(last.weight)} × ${last.reps||'-'}회`;
       }
 
       card.innerHTML = `
@@ -362,42 +430,54 @@ async function renderMain(){
         <p class="ex-target">${ex.sets}세트 × ${ex.reps}${ex.hint ? ' &middot; 목표 ' + ex.hint : ''}</p>
         ${lastLine ? `<p class="ex-last">${lastLine}</p>` : ''}
         <div class="set-grid" data-ex="${ex.id}"></div>
+        <div class="set-controls">
+          <button type="button" class="ctrl-btn" data-action="remove" aria-label="세트 삭제">− 세트</button>
+          <span class="set-count">${currentTotal}세트</span>
+          <button type="button" class="ctrl-btn" data-action="add" aria-label="세트 추가">+ 세트</button>
+        </div>
+        ${ex.isTime ? '' : `
+        <div class="quick-tags">
+          <button type="button" class="tag-btn" data-tag="맨몸">전체 맨몸</button>
+          <button type="button" class="tag-btn" data-tag="빈바">전체 빈바</button>
+        </div>`}
       `;
       const grid = card.querySelector('.set-grid');
-      for(let i=0;i<totalSets;i++){
-        const chip = document.createElement('div');
-        chip.className = 'set-chip';
-        let labelText;
-        if(ex.uni){
-          const side = i%2===0 ? '좌' : '우';
-          const num = Math.floor(i/2)+1;
-          labelText = side+num;
-        } else {
-          labelText = 'SET '+(i+1);
+      const countLabel = card.querySelector('.set-count');
+
+      function renderGrid(){
+        grid.innerHTML = '';
+        for(let i=0;i<currentTotal;i++){
+          const sv = savedSets[i] || {weight:'',reps:''};
+          grid.appendChild(makeChip(i, ex, sv));
         }
-        const sv = savedSets[i] || {weight:'',reps:''};
-        if(ex.isTime){
-          chip.innerHTML = `
-            <span class="set-chip-label">${labelText}</span>
-            <input type="number" inputmode="numeric" placeholder="초" value="${sv.reps||''}" data-field="reps" data-idx="${i}">
-          `;
-        } else {
-          chip.innerHTML = `
-            <span class="set-chip-label">${labelText}</span>
-            <input type="number" inputmode="decimal" placeholder="kg" value="${sv.weight||''}" data-field="weight" data-idx="${i}">
-            <div class="divider"></div>
-            <input type="number" inputmode="numeric" placeholder="회" value="${sv.reps||''}" data-field="reps" data-idx="${i}">
-          `;
-        }
-        if(sv.weight || sv.reps) chip.classList.add('done');
-        grid.appendChild(chip);
-        chip.querySelectorAll('input').forEach(inp=>{
-          inp.addEventListener('input', ()=>{
-            if(inp.value) chip.classList.add('done'); else if(!chip.querySelector('input[data-field="weight"]')?.value && !chip.querySelector('input[data-field="reps"]')?.value) chip.classList.remove('done');
-            markDirty();
-          });
-        });
+        countLabel.textContent = currentTotal + '세트';
       }
+      renderGrid();
+
+      card.querySelector('[data-action="add"]').addEventListener('click', ()=>{
+        currentTotal += ex.uni ? 2 : 1;
+        renderGrid();
+        markDirty();
+      });
+      card.querySelector('[data-action="remove"]').addEventListener('click', ()=>{
+        const step = ex.uni ? 2 : 1;
+        if(currentTotal - step >= minTotal){
+          currentTotal -= step;
+          renderGrid();
+          markDirty();
+        }
+      });
+
+      card.querySelectorAll('.tag-btn').forEach(tagBtn=>{
+        tagBtn.addEventListener('click', ()=>{
+          const tag = tagBtn.dataset.tag;
+          grid.querySelectorAll('input[data-field="weight"]').forEach(w=>{
+            w.value = tag;
+          });
+          grid.querySelectorAll('.set-chip').forEach(c=>c.classList.add('done'));
+          markDirty();
+        });
+      });
       main.appendChild(card);
     }
   }
