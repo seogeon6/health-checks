@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#16171A">
+<title>운동 기록</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root{
+  --bg:#16171A;
+  --surface:#1F2124;
+  --surface-2:#26282C;
+  --border:#2E3034;
+  --border-strong:#3A3C40;
+  --text:#F0F1EC;
+  --text-2:#9A9C97;
+  --text-3:#66685F;
+  --accent:#D7F24C;
+  --accent-dim:#8B9A3A;
+  --iron:#E2603B;
+  --radius:10px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:'Inter',-apple-system,sans-serif;
+  padding-bottom:80px;
+  min-height:100vh;
+}
+.wrap{max-width:480px;margin:0 auto;padding:0 16px}
+
+header{
+  padding:24px 16px 16px;position:sticky;top:0;background:var(--bg);z-index:10;
+  border-bottom:0.5px solid var(--border);
+}
+.brand{
+  font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:1px;
+  color:var(--accent);line-height:1;margin:0 0 2px;
+}
+.brand-sub{font-size:12px;color:var(--text-3);margin:0 0 16px}
+
+.date-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.date-row input[type=date]{
+  flex:1;background:var(--surface);border:0.5px solid var(--border);color:var(--text);
+  border-radius:var(--radius);padding:9px 10px;font-family:'IBM Plex Mono',monospace;font-size:14px;
+}
+.day-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.day-tab{
+  background:var(--surface);border:0.5px solid var(--border);color:var(--text-2);
+  border-radius:var(--radius);padding:9px 4px;font-size:13px;font-weight:500;
+  text-align:center;cursor:pointer;font-family:'Inter',sans-serif;
+}
+.day-tab.active{background:var(--accent);border-color:var(--accent);color:#1A1D0A;font-weight:600}
+
+main{padding:16px}
+
+.section-label{
+  font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.6px;
+  margin:22px 0 8px;padding:0 2px;
+}
+.section-label:first-child{margin-top:4px}
+
+.ex-card{
+  background:var(--surface);border:0.5px solid var(--border);border-radius:12px;
+  padding:14px;margin-bottom:10px;
+}
+.ex-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px}
+.ex-name{font-size:15px;font-weight:600;margin:0}
+.ex-target{font-size:12px;color:var(--text-2);margin:2px 0 0}
+.ex-last{font-size:12px;color:var(--accent-dim);margin:2px 0 0;font-family:'IBM Plex Mono',monospace}
+
+.set-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.set-chip{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:var(--surface-2);border:0.5px solid var(--border);border-radius:var(--radius);
+  padding:8px 6px;width:74px;
+}
+.set-chip.done{border-color:var(--accent-dim)}
+.set-chip-label{font-size:10px;color:var(--text-3);letter-spacing:0.4px}
+.set-chip input{
+  width:100%;background:transparent;border:none;color:var(--text);text-align:center;
+  font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;padding:2px 0;
+}
+.set-chip input::placeholder{color:var(--text-3);font-weight:500}
+.set-chip .divider{height:0.5px;background:var(--border);width:100%}
+
+.cardio-row{
+  background:var(--surface);border:0.5px solid var(--border);border-radius:12px;
+  padding:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+}
+.cardio-row input{
+  width:70px;background:var(--surface-2);border:0.5px solid var(--border);color:var(--text);
+  border-radius:var(--radius);padding:7px;text-align:center;font-family:'IBM Plex Mono',monospace;
+}
+
+.save-bar{
+  position:fixed;bottom:0;left:0;right:0;background:var(--bg);
+  border-top:0.5px solid var(--border);padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:8px;
+}
+.save-row{display:flex;align-items:center;gap:10px}
+.save-primary{
+  flex:1;background:var(--accent);border:none;color:#1A1D0A;
+  border-radius:var(--radius);padding:12px;font-size:14px;font-weight:600;cursor:pointer;
+  font-family:'Inter',sans-serif;
+}
+.save-primary:active{transform:scale(0.98)}
+.save-status{font-size:12px;color:var(--text-2);font-family:'IBM Plex Mono',monospace;white-space:nowrap}
+.backup-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.backup-btn{
+  background:none;border:0.5px solid var(--border-strong);color:var(--text-2);
+  border-radius:var(--radius);padding:8px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;
+}
+
+.history-toggle{
+  width:100%;background:none;border:0.5px solid var(--border-strong);color:var(--text-2);
+  border-radius:var(--radius);padding:10px;font-size:13px;margin-top:24px;cursor:pointer;
+  font-family:'Inter',sans-serif;
+}
+.history-list{margin-top:12px}
+.history-item{
+  background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);
+  padding:10px 12px;margin-bottom:6px;font-size:13px;display:flex;justify-content:space-between;
+  cursor:pointer;
+}
+.history-item .d{color:var(--text-2)}
+.history-item .n{font-family:'IBM Plex Mono',monospace;color:var(--text)}
+
+.empty-note{font-size:12px;color:var(--text-3);text-align:center;padding:20px 0}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="brand">LOG</p>
+  <p class="brand-sub">오늘의 무게와 횟수를 기록하세요</p>
+  <div class="date-row">
+    <input type="date" id="dateInput">
+  </div>
+  <div class="day-tabs" id="dayTabs"></div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<div class="wrap">
+  <button class="history-toggle" id="historyToggle">지난 기록 보기</button>
+  <div class="history-list" id="historyList" style="display:none"></div>
+</div>
+
+<div class="save-bar">
+  <div class="save-row">
+    <button class="save-primary" id="saveBtn">저장하기</button>
+    <span class="save-status" id="saveStatus">불러오는 중...</span>
+  </div>
+  <div class="backup-btns">
+    <button class="backup-btn" id="exportBtn">내보내기</button>
+    <button class="backup-btn" id="importBtn">가져오기</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
+  </div>
+</div>
+
+<script>
+/*
+  이 앱은 폰 브라우저의 localStorage에 데이터를 저장합니다.
+  기기를 바꾸거나 브라우저 데이터를 지우면 기록이 사라질 수 있으니,
+  가끔 하단의 "내보내기"로 백업 파일을 저장해두는 걸 추천해요.
+*/
+const storage = {
+  async get(key){
+    const v = localStorage.getItem(key);
+    return v === null ? null : { key, value: v };
+  },
+  async set(key, value){
+    localStorage.setItem(key, value);
+    return { key, value };
+  },
+  async list(prefix){
+    const keys = [];
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith(prefix)) keys.push(k);
+    }
+    return { keys };
+  },
+  async delete(key){
+    localStorage.removeItem(key);
+    return { key, deleted:true };
+  }
+};
+
+const ROUTINES = {
+  mon: {
+    label: '월요일 · 등·이두',
+    groups: [
+      { name: '등·이두 본운동', exercises: [
+        { id:'m1', name:'랫풀다운', sets:3, reps:'8~12', hint:'25~30kg' },
+        { id:'m2', name:'체스트 서포티드 로우', sets:3, reps:'8~12', hint:'20~30kg' },
+        { id:'m3', name:'원암 케이블로우', sets:2, reps:'10~12', hint:'7.5~12.5kg', uni:true },
+        { id:'m4', name:'스트레이트암 풀다운', sets:2, reps:'12~15', hint:'10~15kg' },
+        { id:'m5', name:'프리처컬 · 케이블컬', sets:3, reps:'10~12', hint:'10~15kg' },
+        { id:'m6', name:'덤벨 해머컬', sets:2, reps:'10~15', hint:'5~7kg', uni:true },
+      ]},
+      { name: '복근', exercises: [
+        { id:'m7', name:'케이블 크런치', sets:3, reps:'10~15', hint:'' },
+        { id:'m8', name:'플랭크', sets:2, reps:'30~60초', hint:'', isTime:true },
+      ]},
+    ],
+    cardio: { name:'러닝머신 걷기', hint:'대화 가능한 강도' }
+  },
+  tue: {
+    label: '화요일 · 가슴·삼두',
+    groups: [
+      { name: '가슴 운동', exercises: [
+        { id:'t1', name:'스미스 벤치프레스', sets:3, reps:'8~12', hint:'양쪽 5kg' },
+        { id:'t2', name:'인클라인 체스트프레스', sets:3, reps:'8~12', hint:'총 15~25kg' },
+        { id:'t3', name:'펙덱 플라이', sets:3, reps:'12~15', hint:'15~25kg' },
+      ]},
+      { name: '삼두 운동', exercises: [
+        { id:'t4', name:'케이블 푸시다운', sets:3, reps:'10~15', hint:'10~15kg' },
+        { id:'t5', name:'오버헤드 케이블 익스텐션', sets:2, reps:'10~15', hint:'7.5~12.5kg' },
+      ]},
+    ],
+    cardio: null
+  },
+  thu: {
+    label: '목요일 · 하체',
+    groups: [
+      { name: '하체 본운동', exercises: [
+        { id:'h1', name:'레그프레스', sets:3, reps:'8~12', hint:'40~60kg' },
+        { id:'h2', name:'불가리안 스플릿 스쿼트', sets:2, reps:'8~12', hint:'맨몸 시작', uni:true },
+        { id:'h3', name:'레그컬', sets:3, reps:'10~15', hint:'15~25kg' },
+        { id:'h4', name:'스미스 루마니안 데드리프트', sets:3, reps:'8~12', hint:'빈바~2.5kg' },
+        { id:'h5', name:'레그익스텐션', sets:2, reps:'10~15', hint:'15~25kg' },
+        { id:'h6', name:'카프레이즈', sets:3, reps:'12~20', hint:'반동 없는 무게' },
+      ]},
+      { name: '복근', exercises: [
+        { id:'h7', name:'니레이즈 · 리버스 크런치', sets:3, reps:'8~15', hint:'' },
+        { id:'h8', name:'사이드 플랭크', sets:2, reps:'20~40초', hint:'', uni:true, isTime:true },
+      ]},
+    ],
+    cardio: null
+  },
+  sat: {
+    label: '토요일 · 어깨',
+    groups: [
+      { name: '어깨 본운동', exercises: [
+        { id:'s1', name:'머신 숄더프레스', sets:3, reps:'8~12', hint:'총 10~20kg' },
+        { id:'s2', name:'한 손 케이블 레터럴레이즈', sets:3, reps:'12~20', hint:'한쪽 2.5~5kg', uni:true },
+        { id:'s3', name:'리버스 펙덱', sets:3, reps:'12~15', hint:'10~20kg' },
+      ]},
+      { name: '상체 보완', exercises: [
+        { id:'s4', name:'랫풀다운 (보완)', sets:2, reps:'10~12', hint:'월요일의 80~90%' },
+        { id:'s5', name:'인클라인 체스트프레스 (보완)', sets:2, reps:'10~12', hint:'화요일의 80~90%' },
+      ]},
+      { name: '마무리 · 후면 어깨', exercises: [
+        { id:'s6', name:'페이스풀', sets:2, reps:'12~20', hint:'7.5~15kg' },
+      ]},
+    ],
+    cardio: { name:'러닝머신 걷기', hint:'대화 가능한 강도' }
+  },
+};
+const DAY_ORDER = ['mon','tue','thu','sat'];
+
+let state = { day:'mon', date: todayStr() };
+let saveTimer = null;
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function weekdayToDay(dateStr){
+  const wd = new Date(dateStr+'T00:00:00').getDay();
+  if(wd===1) return 'mon';
+  if(wd===2) return 'tue';
+  if(wd===4) return 'thu';
+  if(wd===6) return 'sat';
+  return null;
+}
+
+function keyFor(day, date){ return 'log_'+day+'_'+date; }
+
+function renderTabs(){
+  const el = document.getElementById('dayTabs');
+  el.innerHTML = '';
+  DAY_ORDER.forEach(d=>{
+    const btn = document.createElement('div');
+    btn.className = 'day-tab' + (state.day===d ? ' active' : '');
+    btn.textContent = ROUTINES[d].label.split(' · ')[1];
+    btn.onclick = ()=>{ state.day = d; loadAndRender(); };
+    el.appendChild(btn);
+  });
+}
+
+async function getLastValue(day, exId, beforeDate){
+  try{
+    const list = await storage.list('log_'+day+'_');
+    if(!list || !list.keys) return null;
+    const dates = list.keys
+      .map(k=>k.replace('log_'+day+'_',''))
+      .filter(d=>d < beforeDate)
+      .sort()
+      .reverse();
+    for(const d of dates){
+      try{
+        const r = await storage.get(keyFor(day,d));
+        if(r && r.value){
+          const data = JSON.parse(r.value);
+          const sets = data.exercises && data.exercises[exId];
+          if(sets && sets.some(s=>s.weight || s.reps)){
+            const filled = sets.filter(s=>s.weight || s.reps);
+            const last = filled[filled.length-1];
+            return { date:d, weight:last.weight, reps:last.reps };
+          }
+        }
+      }catch(e){}
+    }
+  }catch(e){}
+  return null;
+}
+
+async function renderMain(){
+  const status = document.getElementById('saveStatus');
+  status.textContent = '불러오는 중...';
+  const routine = ROUTINES[state.day];
+  let existing = { exercises:{}, cardio:'' };
+  try{
+    const r = await storage.get(keyFor(state.day, state.date));
+    if(r && r.value) existing = JSON.parse(r.value);
+  }catch(e){}
+
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  for(const group of routine.groups){
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = group.name;
+    main.appendChild(label);
+
+    for(const ex of group.exercises){
+      const card = document.createElement('div');
+      card.className = 'ex-card';
+      const totalSets = ex.uni ? ex.sets*2 : ex.sets;
+      const savedSets = (existing.exercises[ex.id]) || Array.from({length:totalSets},()=>({weight:'',reps:''}));
+
+      let lastLine = '';
+      const last = await getLastValue(state.day, ex.id, state.date);
+      if(last){
+        lastLine = ex.isTime
+          ? `지난번(${last.date.slice(5)}) ${last.reps||'-'}초`
+          : `지난번(${last.date.slice(5)}) ${last.weight||'-'}kg × ${last.reps||'-'}회`;
+      }
+
+      card.innerHTML = `
+        <div class="ex-head">
+          <p class="ex-name">${ex.name}</p>
+        </div>
+        <p class="ex-target">${ex.sets}세트 × ${ex.reps}${ex.hint ? ' &middot; 목표 ' + ex.hint : ''}</p>
+        ${lastLine ? `<p class="ex-last">${lastLine}</p>` : ''}
+        <div class="set-grid" data-ex="${ex.id}"></div>
+      `;
+      const grid = card.querySelector('.set-grid');
+      for(let i=0;i<totalSets;i++){
+        const chip = document.createElement('div');
+        chip.className = 'set-chip';
+        let labelText;
+        if(ex.uni){
+          const side = i%2===0 ? '좌' : '우';
+          const num = Math.floor(i/2)+1;
+          labelText = side+num;
+        } else {
+          labelText = 'SET '+(i+1);
+        }
+        const sv = savedSets[i] || {weight:'',reps:''};
+        if(ex.isTime){
+          chip.innerHTML = `
+            <span class="set-chip-label">${labelText}</span>
+            <input type="number" inputmode="numeric" placeholder="초" value="${sv.reps||''}" data-field="reps" data-idx="${i}">
+          `;
+        } else {
+          chip.innerHTML = `
+            <span class="set-chip-label">${labelText}</span>
+            <input type="number" inputmode="decimal" placeholder="kg" value="${sv.weight||''}" data-field="weight" data-idx="${i}">
+            <div class="divider"></div>
+            <input type="number" inputmode="numeric" placeholder="회" value="${sv.reps||''}" data-field="reps" data-idx="${i}">
+          `;
+        }
+        if(sv.weight || sv.reps) chip.classList.add('done');
+        grid.appendChild(chip);
+        chip.querySelectorAll('input').forEach(inp=>{
+          inp.addEventListener('input', ()=>{
+            if(inp.value) chip.classList.add('done'); else if(!chip.querySelector('input[data-field="weight"]')?.value && !chip.querySelector('input[data-field="reps"]')?.value) chip.classList.remove('done');
+            scheduleSave();
+          });
+        });
+      }
+      main.appendChild(card);
+    }
+  }
+
+  if(routine.cardio){
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = '유산소';
+    main.appendChild(label);
+    const row = document.createElement('div');
+    row.className = 'cardio-row';
+    row.innerHTML = `
+      <div>
+        <p class="ex-name" style="margin:0">${routine.cardio.name}</p>
+        <p class="ex-target">${routine.cardio.hint}</p>
+      </div>
+      <input type="number" inputmode="numeric" id="cardioInput" placeholder="분" value="${existing.cardio||''}">
+    `;
+    main.appendChild(row);
+    row.querySelector('#cardioInput').addEventListener('input', scheduleSave);
+  }
+
+  status.textContent = '자동 저장됨';
+}
+
+function scheduleSave(){
+  const status = document.getElementById('saveStatus');
+  status.textContent = '저장 중...';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 400);
+}
+
+async function saveNow(){
+  const status = document.getElementById('saveStatus');
+  const data = { date: state.date, day: state.day, exercises:{}, cardio:'' };
+  document.querySelectorAll('.set-grid').forEach(grid=>{
+    const exId = grid.dataset.ex;
+    const chips = grid.querySelectorAll('.set-chip');
+    const arr = [];
+    chips.forEach(chip=>{
+      const w = chip.querySelector('input[data-field="weight"]');
+      const r = chip.querySelector('input[data-field="reps"]');
+      arr.push({ weight: w ? w.value : '', reps: r ? r.value : '' });
+    });
+    data.exercises[exId] = arr;
+  });
+  const cardioInput = document.getElementById('cardioInput');
+  if(cardioInput) data.cardio = cardioInput.value;
+
+  try{
+    const result = await storage.set(keyFor(state.day, state.date), JSON.stringify(data));
+    status.textContent = result ? '저장됨 · ' + new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : '저장 실패';
+  }catch(e){
+    status.textContent = '저장 실패 (다시 시도해주세요)';
+  }
+}
+
+async function loadAndRender(){
+  renderTabs();
+  await renderMain();
+}
+
+document.getElementById('dateInput').addEventListener('change', (e)=>{
+  state.date = e.target.value;
+  const auto = weekdayToDay(state.date);
+  if(auto) state.day = auto;
+  loadAndRender();
+});
+
+document.getElementById('historyToggle').addEventListener('click', async ()=>{
+  const listEl = document.getElementById('historyList');
+  const toggle = document.getElementById('historyToggle');
+  if(listEl.style.display === 'none'){
+    listEl.style.display = 'block';
+    toggle.textContent = '지난 기록 닫기';
+    listEl.innerHTML = '<p class="empty-note">불러오는 중...</p>';
+    try{
+      let allKeys = [];
+      for(const d of DAY_ORDER){
+        const r = await storage.list('log_'+d+'_');
+        if(r && r.keys) r.keys.forEach(k=>allKeys.push({day:d, date:k.replace('log_'+d+'_','')}));
+      }
+      allKeys.sort((a,b)=> b.date.localeCompare(a.date));
+      if(allKeys.length===0){
+        listEl.innerHTML = '<p class="empty-note">아직 기록이 없어요.</p>';
+      } else {
+        listEl.innerHTML = '';
+        for(const item of allKeys.slice(0,30)){
+          const row = document.createElement('div');
+          row.className = 'history-item';
+          row.innerHTML = `<span class="d">${item.date} · ${ROUTINES[item.day].label.split(' · ')[1]}</span><span class="n">보기</span>`;
+          row.onclick = ()=>{
+            state.date = item.date;
+            state.day = item.day;
+            document.getElementById('dateInput').value = item.date;
+            listEl.style.display = 'none';
+            toggle.textContent = '지난 기록 보기';
+            loadAndRender();
+            window.scrollTo({top:0, behavior:'smooth'});
+          };
+          listEl.appendChild(row);
+        }
+      }
+    }catch(e){
+      listEl.innerHTML = '<p class="empty-note">기록을 불러오지 못했어요.</p>';
+    }
+  } else {
+    listEl.style.display = 'none';
+    toggle.textContent = '지난 기록 보기';
+  }
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const backup = {};
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith('log_')) backup[k] = localStorage.getItem(k);
+  }
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'workout-log-backup-' + todayStr() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('importFile').click();
+});
+
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const backup = JSON.parse(reader.result);
+      let count = 0;
+      Object.keys(backup).forEach(k=>{
+        if(k.startsWith('log_')){ localStorage.setItem(k, backup[k]); count++; }
+      });
+      alert(count + '개의 기록을 가져왔어요.');
+      loadAndRender();
+    }catch(err){
+      alert('파일을 읽는 데 실패했어요. 올바른 백업 파일인지 확인해주세요.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('saveBtn');
+  clearTimeout(saveTimer);
+  btn.disabled = true;
+  btn.textContent = '저장 중...';
+  await saveNow();
+  btn.textContent = '✓ 저장됨';
+  setTimeout(()=>{ btn.textContent = '저장하기'; btn.disabled = false; }, 1000);
+});
+
+(function init(){
+  const today = todayStr();
+  document.getElementById('dateInput').value = today;
+  state.date = today;
+  const auto = weekdayToDay(today);
+  if(auto) state.day = auto;
+  loadAndRender();
+})();
+</script>
+</body>
+</html>
