@@ -34,7 +34,7 @@ input,select,textarea{font-size:16px}
 body{
   margin:0;background:var(--bg);color:var(--text);
   font-family:'Inter',-apple-system,sans-serif;
-  padding-bottom:80px;
+  padding-bottom:calc(160px + env(safe-area-inset-bottom));
   min-height:100vh;
 }
 .wrap{max-width:480px;margin:0 auto;padding:0 16px}
@@ -607,6 +607,17 @@ document.getElementById('resetBtn').addEventListener('click', async ()=>{
   document.getElementById('saveStatus').textContent = '초기화됨';
 });
 
+// 하단 고정 바 높이만큼 페이지 아래 여백을 자동으로 맞춰서, 마지막 내용이 바 뒤에 가려지지 않게 함
+(function fitBottomSpace(){
+  const bar = document.querySelector('.save-bar');
+  if(!bar) return;
+  const apply = ()=>{ document.body.style.paddingBottom = (bar.offsetHeight + 24) + 'px'; };
+  apply();
+  window.addEventListener('resize', apply);
+  window.addEventListener('orientationchange', apply);
+  if(window.ResizeObserver) new ResizeObserver(apply).observe(bar);
+})();
+
 document.getElementById('historyToggle').addEventListener('click', async ()=>{
   const listEl = document.getElementById('historyList');
   const toggle = document.getElementById('historyToggle');
@@ -614,6 +625,7 @@ document.getElementById('historyToggle').addEventListener('click', async ()=>{
     listEl.style.display = 'block';
     toggle.textContent = '지난 기록 닫기';
     listEl.innerHTML = '<p class="empty-note">불러오는 중...</p>';
+    toggle.scrollIntoView({ behavior:'smooth', block:'start' });
     try{
       let allKeys = [];
       for(const d of DAY_ORDER){
