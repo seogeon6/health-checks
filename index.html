@@ -625,7 +625,9 @@ document.getElementById('historyToggle').addEventListener('click', async ()=>{
     listEl.style.display = 'block';
     toggle.textContent = '지난 기록 닫기';
     listEl.innerHTML = '<p class="empty-note">불러오는 중...</p>';
-    toggle.scrollIntoView({ behavior:'smooth', block:'start' });
+    const headerH = document.querySelector('header').offsetHeight;
+    const top = toggle.getBoundingClientRect().top + window.scrollY - headerH - 12;
+    window.scrollTo({ top, behavior:'smooth' });
     try{
       let allKeys = [];
       for(const d of DAY_ORDER){
