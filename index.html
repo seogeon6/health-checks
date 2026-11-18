@@ -25,12 +25,16 @@
   --text-3:#66685F;
   --accent:#D7F24C;
   --accent-dim:#8B9A3A;
+  --accent-bg:#262B17;
   --iron:#E2603B;
   --iron-dim:#5C3527;
+  --on-accent:#1A1D0A;
   --radius:10px;
+  --safe-top:env(safe-area-inset-top, 0px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 input,select,textarea{font-size:16px}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 body{
   margin:0;background:var(--bg);color:var(--text);
   font-family:'Inter',-apple-system,sans-serif;
@@ -39,18 +43,15 @@ body{
 }
 .wrap{max-width:480px;margin:0 auto;padding:0 16px}
 
-header{
-  padding:24px 16px 16px;position:sticky;top:0;background:var(--bg);z-index:10;
-  border-bottom:0.5px solid var(--border);
-}
+header{padding:calc(18px + var(--safe-top)) 16px 4px;background:var(--bg)}
 .brand{
   font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:1px;
   color:var(--accent);line-height:1;margin:0 0 2px;
 }
-.brand-sub{font-size:12px;color:var(--text-3);margin:0 0 16px}
+.brand-sub{font-size:12px;color:var(--text-3);margin:0 0 12px}
 .date-badge{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;color:var(--accent)}
 
-.date-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.date-row{display:flex;align-items:center;gap:10px}
 .date-row input[type=date]{
   flex:1;background:var(--surface);border:0.5px solid var(--border);color:var(--text);
   border-radius:var(--radius);padding:9px 10px;font-family:'IBM Plex Mono',monospace;font-size:16px;
@@ -61,18 +62,35 @@ header{
   font-family:'Inter',sans-serif;
 }
 .reset-btn:active{transform:scale(0.96)}
-.day-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+
+/* 스크롤해도 요일 탭과 진행률은 항상 보이도록 상단에 고정 */
+.sticky-bar{
+  position:sticky;top:var(--safe-top);z-index:10;background:var(--bg);
+  padding:10px 16px;border-bottom:0.5px solid var(--border);
+  box-shadow:0 calc(-1 * var(--safe-top)) 0 var(--bg);
+}
+.day-tabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 .day-tab{
   background:var(--surface);border:0.5px solid var(--border);color:var(--text-2);
-  border-radius:var(--radius);padding:9px 4px;font-size:13px;font-weight:500;
-  text-align:center;cursor:pointer;font-family:'Inter',sans-serif;
+  border-radius:var(--radius);padding:7px 0 6px;cursor:pointer;font-family:'Inter',sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.25;
 }
-.day-tab.active{background:var(--accent);border-color:var(--accent);color:#1A1D0A;font-weight:600}
+.day-tab .dt-d{font-size:14px;font-weight:600}
+.day-tab .dt-n{font-size:10px;color:var(--text-3)}
+.day-tab.today{border-color:var(--accent-dim)}
+.day-tab.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.day-tab.active .dt-n{color:var(--on-accent)}
+
+.progress{display:flex;align-items:center;gap:10px;margin-top:10px}
+.progress-track{flex:1;height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .25s}
+.progress-text{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-2);white-space:nowrap}
+.progress.is-rest .progress-track{visibility:hidden}
 
 main{padding:16px}
 
 .section-label{
-  font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.6px;
+  font-size:12px;color:var(--text-3);letter-spacing:0.6px;
   margin:22px 0 8px;padding:0 2px;
 }
 .section-label:first-child{margin-top:4px}
@@ -81,18 +99,44 @@ main{padding:16px}
   background:var(--surface);border:0.5px solid var(--border);border-radius:12px;
   padding:14px;margin-bottom:10px;
 }
-.ex-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px}
-.ex-name{font-size:15px;font-weight:600;margin:0}
-.ex-target{font-size:12px;color:var(--text-2);margin:2px 0 0}
-.ex-last{font-size:12px;color:var(--accent-dim);margin:2px 0 0;font-family:'IBM Plex Mono',monospace}
+.ex-card.complete{border-color:var(--accent-dim)}
+.ex-head{display:flex;align-items:flex-start;gap:10px}
+.ex-num{
+  flex:none;width:24px;height:24px;border-radius:50%;background:var(--surface-2);color:var(--text-2);
+  font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;margin-top:1px;
+}
+.ex-card.complete .ex-num{background:var(--accent);color:var(--on-accent)}
+.ex-title{
+  flex:1;min-width:0;background:none;border:none;padding:0;margin:0;text-align:left;
+  color:var(--text);cursor:pointer;font-family:inherit;
+}
+.ex-name{font-size:15px;font-weight:600;margin:0;display:flex;align-items:center;gap:6px}
+.chev{font-size:11px;color:var(--text-3);transition:transform .2s}
+.ex-card.open .chev{transform:rotate(180deg)}
+.ex-target{display:block;font-size:12px;color:var(--text-2);margin:3px 0 0}
+.ex-note{font-size:12px;color:var(--text-2);margin:8px 0 0}
+.ex-last{font-size:12px;color:var(--accent-dim);margin:6px 0 0;font-family:'IBM Plex Mono',monospace}
+.badge-done{
+  display:none;flex:none;font-size:11px;font-weight:600;color:var(--on-accent);
+  background:var(--accent);border-radius:6px;padding:3px 7px;
+}
+.ex-card.complete .badge-done{display:inline-block}
+.guide{
+  display:none;margin-top:10px;padding:10px 12px;background:var(--surface-2);
+  border-radius:var(--radius);font-size:13px;line-height:1.6;color:var(--text-2);
+}
+.guide b{display:block;font-size:11px;color:var(--text-3);font-weight:500;margin-bottom:2px}
+.ex-card.open .guide{display:block}
 
 .set-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .set-chip{
   display:flex;flex-direction:column;align-items:center;gap:5px;
   background:var(--surface-2);border:0.5px solid var(--border);border-radius:var(--radius);
-  padding:8px 6px;width:100px;
+  padding:8px 6px 6px;width:100px;
 }
-.set-chip.done{border-color:var(--accent-dim)}
+.set-chip.filled{border-color:var(--border-strong)}
+.set-chip.done{border-color:var(--accent);background:var(--accent-bg)}
 .set-chip-label{font-size:10px;color:var(--text-3);letter-spacing:0.4px}
 .set-chip input{
   background:transparent;border:none;color:var(--text);text-align:right;
@@ -102,6 +146,14 @@ main{padding:16px}
 .set-chip .divider{height:0.5px;background:var(--border);width:100%}
 .field-row{display:flex;align-items:baseline;justify-content:center;gap:3px;width:100%}
 .unit{font-size:10px;color:var(--text-3)}
+.side{font-size:10px;color:var(--text-3);min-width:10px}
+.check-btn{
+  width:100%;height:36px;margin-top:2px;border-radius:8px;cursor:pointer;
+  border:0.5px solid var(--border-strong);background:transparent;color:var(--text-3);
+  font-size:16px;font-weight:600;font-family:'Inter',sans-serif;
+}
+.check-btn:active{transform:scale(0.97)}
+.set-chip.done .check-btn,.run-check[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 
 .set-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
 .ctrl-btn{
@@ -119,23 +171,29 @@ main{padding:16px}
 }
 .tag-btn:active{transform:scale(0.97)}
 
-.cardio-row{
-  background:var(--surface);border:0.5px solid var(--border);border-radius:12px;
-  padding:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+.run-inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.run-field{
+  background:var(--surface-2);border:0.5px solid var(--border);border-radius:var(--radius);
+  padding:8px 10px;display:flex;flex-direction:column;gap:2px;
 }
-.cardio-row input{
-  width:80px;background:var(--surface-2);border:0.5px solid var(--border);color:var(--text);
-  border-radius:var(--radius);padding:7px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:16px;
+.run-field > span:first-child{font-size:10px;color:var(--text-3)}
+.run-field input{
+  background:transparent;border:none;color:var(--text);padding:2px 0;width:100%;min-width:0;
+  font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;
 }
+.run-field input::placeholder{color:var(--text-3);font-weight:500}
+.run-field .field-row{justify-content:flex-start}
+.run-stats{font-size:12px;color:var(--text-2);margin:10px 0 0;font-family:'IBM Plex Mono',monospace;min-height:16px}
+.run-check{height:44px;margin-top:12px;font-size:14px}
 
 .save-bar{
-  position:fixed;bottom:0;left:0;right:0;background:var(--bg);
+  position:fixed;bottom:0;left:0;right:0;background:var(--bg);z-index:20;
   border-top:0.5px solid var(--border);padding:10px 16px calc(10px + env(safe-area-inset-bottom));
   display:flex;flex-direction:column;gap:8px;
 }
 .save-row{display:flex;align-items:center;gap:10px}
 .save-primary{
-  flex:1;background:var(--accent);border:none;color:#1A1D0A;
+  flex:1;background:var(--accent);border:none;color:var(--on-accent);
   border-radius:var(--radius);padding:12px;font-size:14px;font-weight:600;cursor:pointer;
   font-family:'Inter',sans-serif;
 }
@@ -154,14 +212,25 @@ main{padding:16px}
 }
 .history-list{margin-top:12px}
 .history-item{
-  background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);
-  padding:10px 12px;margin-bottom:6px;font-size:13px;display:flex;justify-content:space-between;
-  cursor:pointer;
+  width:100%;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);
+  padding:10px 12px;margin-bottom:6px;font-size:13px;display:flex;justify-content:space-between;gap:10px;
+  cursor:pointer;color:var(--text);font-family:inherit;text-align:left;
 }
 .history-item .d{color:var(--text-2)}
-.history-item .n{font-family:'IBM Plex Mono',monospace;color:var(--text)}
+.history-item .n{font-family:'IBM Plex Mono',monospace;color:var(--text);white-space:nowrap}
+.history-item.legacy .d{color:var(--text-3)}
+.history-detail{
+  margin:-2px 0 8px;padding:10px 12px;background:var(--surface-2);border-radius:var(--radius);
+  font-size:12px;line-height:1.7;color:var(--text-2);
+}
+.history-detail .hd-row{display:flex;justify-content:space-between;gap:10px}
+.history-detail .hd-row span:last-child{font-family:'IBM Plex Mono',monospace;color:var(--text);text-align:right}
 
 .empty-note{font-size:12px;color:var(--text-3);text-align:center;padding:20px 0}
+
+@media (prefers-reduced-motion:reduce){
+  .progress-fill,.chev{transition:none}
+}
 </style>
 </head>
 <body>
@@ -171,13 +240,20 @@ main{padding:16px}
     <p class="brand">GRIP</p>
     <span class="date-badge" id="dateBadge"></span>
   </div>
-  <p class="brand-sub">오늘의 무게와 횟수를 기록하세요</p>
+  <p class="brand-sub" id="programLabel">12주 프로그램</p>
   <div class="date-row">
-    <input type="date" id="dateInput">
+    <input type="date" id="dateInput" aria-label="날짜 선택">
     <button type="button" class="reset-btn" id="resetBtn">초기화</button>
   </div>
-  <div class="day-tabs" id="dayTabs"></div>
 </header>
+
+<div class="sticky-bar">
+  <div class="day-tabs" id="dayTabs"></div>
+  <div class="progress" id="progress">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-text" id="progressText"></span>
+  </div>
+</div>
 
 <main class="wrap" id="main"></main>
 
@@ -203,6 +279,10 @@ main{padding:16px}
   이 앱은 폰 브라우저의 localStorage에 데이터를 저장합니다.
   기기를 바꾸거나 브라우저 데이터를 지우면 기록이 사라질 수 있으니,
   가끔 하단의 "내보내기"로 백업 파일을 저장해두는 걸 추천해요.
+
+  저장 키
+  - p12_요일_날짜 : 12주 프로그램(2026.11.23~) 기록
+  - log_요일_날짜 : 이전 4분할 루틴 기록 (지우지 않고 읽기 전용으로 보존)
 */
 const storage = {
   async get(key){
@@ -227,80 +307,94 @@ const storage = {
   }
 };
 
-const ROUTINES = {
-  mon: {
-    label: '월요일 · 등·이두',
-    groups: [
-      { name: '등·이두 본운동', exercises: [
-        { id:'m1', name:'랫풀다운', sets:3, reps:'8~12', hint:'25~30kg' },
-        { id:'m2', name:'체스트 서포티드 로우', sets:3, reps:'8~12', hint:'20~30kg' },
-        { id:'m3', name:'원암 케이블로우', sets:2, reps:'10~12', hint:'7.5~12.5kg', uni:true },
-        { id:'m4', name:'스트레이트암 풀다운', sets:2, reps:'12~15', hint:'10~15kg' },
-        { id:'m5', name:'프리처컬 · 케이블컬', sets:3, reps:'10~12', hint:'10~15kg' },
-        { id:'m6', name:'덤벨 해머컬', sets:2, reps:'10~15', hint:'5~7kg', uni:true },
-      ]},
-      { name: '복근', exercises: [
-        { id:'m7', name:'케이블 크런치', sets:3, reps:'10~15', hint:'' },
-        { id:'m8', name:'플랭크', sets:2, reps:'30~60초', hint:'', isTime:true },
-      ]},
-    ],
-    cardio: { name:'러닝머신 걷기', hint:'대화 가능한 강도' }
-  },
-  tue: {
-    label: '화요일 · 가슴·삼두',
-    groups: [
-      { name: '가슴 운동', exercises: [
-        { id:'t1', name:'스미스 벤치프레스', sets:3, reps:'8~12', hint:'양쪽 5kg' },
-        { id:'t2', name:'인클라인 체스트프레스', sets:3, reps:'8~12', hint:'총 15~25kg' },
-        { id:'t3', name:'펙덱 플라이', sets:3, reps:'12~15', hint:'15~25kg' },
-      ]},
-      { name: '삼두 운동', exercises: [
-        { id:'t4', name:'케이블 푸시다운', sets:3, reps:'10~15', hint:'10~15kg' },
-        { id:'t5', name:'오버헤드 케이블 익스텐션', sets:2, reps:'10~15', hint:'7.5~12.5kg' },
-      ]},
-    ],
-    cardio: null
-  },
-  thu: {
-    label: '목요일 · 하체',
-    groups: [
-      { name: '하체 본운동', exercises: [
-        { id:'h1', name:'레그프레스', sets:3, reps:'8~12', hint:'40~60kg' },
-        { id:'h2', name:'불가리안 스플릿 스쿼트', sets:2, reps:'8~12', hint:'맨몸 시작', uni:true },
-        { id:'h3', name:'레그컬', sets:3, reps:'10~15', hint:'15~25kg' },
-        { id:'h4', name:'스미스 루마니안 데드리프트', sets:3, reps:'8~12', hint:'빈바~2.5kg' },
-        { id:'h5', name:'레그익스텐션', sets:2, reps:'10~15', hint:'15~25kg' },
-        { id:'h6', name:'카프레이즈', sets:3, reps:'12~20', hint:'반동 없는 무게' },
-      ]},
-      { name: '복근', exercises: [
-        { id:'h7', name:'니레이즈 · 리버스 크런치', sets:3, reps:'8~15', hint:'' },
-        { id:'h8', name:'사이드 플랭크', sets:2, reps:'20~40초', hint:'', uni:true, isTime:true },
-      ]},
-    ],
-    cardio: null
-  },
-  sat: {
-    label: '토요일 · 어깨',
-    groups: [
-      { name: '어깨 본운동', exercises: [
-        { id:'s1', name:'머신 숄더프레스', sets:3, reps:'8~12', hint:'총 10~20kg' },
-        { id:'s2', name:'한 손 케이블 레터럴레이즈', sets:3, reps:'12~20', hint:'한쪽 2.5~5kg', uni:true },
-        { id:'s3', name:'리버스 펙덱', sets:3, reps:'12~15', hint:'10~20kg' },
-      ]},
-      { name: '상체 보완', exercises: [
-        { id:'s4', name:'랫풀다운 (보완)', sets:2, reps:'10~12', hint:'월요일의 80~90%' },
-        { id:'s5', name:'인클라인 체스트프레스 (보완)', sets:2, reps:'10~12', hint:'화요일의 80~90%' },
-      ]},
-      { name: '마무리 · 후면 어깨', exercises: [
-        { id:'s6', name:'페이스풀', sets:2, reps:'12~20', hint:'7.5~15kg' },
-      ]},
-    ],
-    cardio: { name:'러닝머신 걷기', hint:'대화 가능한 강도' }
-  },
+/* ───────── 12주 프로그램 ───────── */
+const PREFIX = 'p12_';
+const PROGRAM_START = '2026-11-23';
+const PROGRAM_END = '2027-02-14';
+
+/* 운동 사전: 같은 운동은 요일이 달라도 같은 키를 써서 '지난번' 기록이 이어짐 */
+const EX = {
+  chest_press:{ name:'머신 체스트 프레스', rest:'120~180초',
+    guide:'손잡이가 가슴 중간 높이에 오도록 시트를 맞추고, 어깨를 뒤로 모은 채 등을 등받이에 붙입니다. 팔꿈치를 끝까지 잠그지 말고, 밀 때 어깨가 앞으로 말리지 않게 주의하세요.' },
+  iso_row:{ name:'Iso Row', rest:'120~180초',
+    guide:'가슴을 패드에 붙이고 손이 아니라 팔꿈치를 뒤로 보낸다는 느낌으로 당깁니다. 상체를 젖히며 반동을 쓰지 말고, 끝에서 견갑골을 모았다가 천천히 펴세요.' },
+  lat_pull:{ name:'랫풀다운', rest:'약 120초',
+    guide:'가슴을 살짝 내밀고 팔꿈치를 옆구리로 끌어내린다는 느낌으로 바를 쇄골 쪽으로 당깁니다. 몸을 크게 뒤로 젖히거나 목 뒤로 당기지 마세요.' },
+  shoulder_press:{ name:'머신 숄더 프레스', rest:'약 120초',
+    guide:'손잡이가 어깨 높이에서 시작하도록 시트를 맞추고 허리를 등받이에 붙입니다. 허리가 과하게 꺾이거나 어깨가 귀 쪽으로 으쓱 올라가지 않게 하세요.' },
+  lateral:{ name:'사이드 레터럴 레이즈', rest:'60~90초',
+    guide:'팔꿈치를 살짝 굽힌 채 손이 아니라 팔꿈치로 들어 올린다는 느낌으로 어깨 높이까지만 올립니다. 몸을 흔들거나 승모근으로 들게 되면 무게를 낮추세요.' },
+  preacher:{ name:'프리처 컬', rest:'60~90초',
+    guide:'팔 뒷면을 패드에 밀착하고 팔꿈치를 고정한 채 올립니다. 내릴 때 툭 떨어뜨리면 팔꿈치에 무리가 가니 천천히 내리고 끝까지 잠그지 마세요.' },
+  pushdown:{ name:'케이블 푸시다운', rest:'60~90초',
+    guide:'팔꿈치를 옆구리에 고정하고 팔뚝만 움직여 끝까지 펴줍니다. 상체를 숙여 체중으로 누르거나 팔꿈치가 앞뒤로 흔들리지 않게 하세요.' },
+  leg_press:{ name:'레그 프레스', rest:'120~180초',
+    guide:'발을 어깨너비로 플랫폼 중앙에 두고 무릎이 발끝 방향을 따라가게 내립니다. 엉덩이가 시트에서 들릴 만큼 깊게 내리지 말고, 펼 때 무릎을 끝까지 잠그지 마세요.' },
+  db_rdl:{ name:'덤벨 루마니안 데드리프트', rest:'약 120초',
+    guide:'무릎은 살짝만 굽힌 채 엉덩이를 뒤로 빼며 덤벨을 허벅지 앞을 따라 내립니다. 허리가 둥글게 말리기 전, 보통 정강이 중간쯤에서 멈추고 엉덩이 힘으로 일어나세요.' },
+  leg_curl:{ name:'레그 컬', rest:'약 90~120초',
+    guide:'무릎을 기계 회전축과 일직선으로 맞추고 패드는 발목 바로 위에 둡니다. 엉덩이가 들리지 않게 고정하고, 내릴 때 무게가 툭 떨어지지 않게 조절하세요.' },
+  calf:{ name:'카프 레이즈', rest:'60~90초',
+    guide:'발뒤꿈치를 최대한 깊게 내렸다가 발끝으로 끝까지 올라가 1초 멈춥니다. 무릎 반동으로 튕기지 말고 전체 가동범위를 쓰세요.' },
+  cable_crunch:{ name:'케이블 크런치', rest:'60~90초',
+    guide:'무릎을 꿇고 로프를 머리 옆에 고정한 채 갈비뼈를 골반 쪽으로 말아 내린다는 느낌으로 수행합니다. 엉덩이를 뒤로 앉으며 체중으로 당기지 않게 하세요.' },
+  smith_incline:{ name:'스미스 인클라인 벤치프레스', rest:'약 90~120초', tags:['빈바'],
+    guide:'벤치를 30도 안팎으로 세우고 바가 윗가슴(쇄골 아래)으로 내려오도록 벤치 위치를 맞춥니다. 팔꿈치를 몸통과 45~60도로 유지하고, 견갑을 모아 어깨가 들리지 않게 하세요.' },
+  onearm_row:{ name:'원암 케이블 로우', rest:'약 90~120초', uni:true, uniLabel:'좌우 각각',
+    note:'좌우 모두 정해진 횟수를 해야 1세트예요.',
+    guide:'상체를 세운 채 팔꿈치를 엉덩이 쪽으로 끌어당기고, 몸통이 크게 돌아가지 않게 버팁니다. 당긴 끝에서 잠깐 멈추고 천천히 팔을 펴세요.' },
+  reverse_pec:{ name:'리버스 펙덱', rest:'약 90~120초',
+    guide:'손잡이가 어깨 높이에 오도록 시트를 맞추고, 팔을 살짝 굽힌 채 옆으로 넓게 벌립니다. 반동 없이 어깨 뒤쪽 힘으로 벌리고 천천히 되돌아오세요.' },
+  hammer:{ name:'해머 컬', rest:'60~90초',
+    guide:'손바닥이 서로 마주 보게 덤벨을 잡고 팔꿈치를 옆구리에 고정한 채 올립니다. 몸을 흔들어 반동으로 올리지 마세요.' },
+  oh_ext:{ name:'오버헤드 삼두 익스텐션', rest:'약 90~120초',
+    guide:'팔꿈치가 옆으로 벌어지지 않게 머리 옆에 두고 팔뚝만 움직여 위로 펴줍니다. 허리가 꺾이지 않게 복부에 힘을 주세요.' },
+  bulgarian:{ name:'불가리안 스플릿 스쿼트', rest:'약 90~120초', uni:true, uniLabel:'각 다리', tags:['맨몸'],
+    note:'처음 1~2주는 맨몸으로 자세를 익힌 뒤 중량을 조금씩 추가하세요.',
+    guide:'뒷발을 벤치에 올리고, 내려갔을 때 앞무릎이 발끝을 크게 넘지 않을 만큼 앞발을 떨어뜨립니다. 상체를 세우고 앞다리로 수직에 가깝게 내려가세요.' },
+  leg_ext:{ name:'레그 익스텐션', rest:'약 90~120초',
+    guide:'무릎을 회전축에 맞추고 패드를 발목 위에 둔 뒤 끝까지 펴서 1초 멈춥니다. 엉덩이가 들리거나 반동으로 차올리지 마세요.' },
+  knee_raise:{ name:'캡틴 체어 니 레이즈', rest:'60~90초', tags:['맨몸'],
+    guide:'등을 등받이에 붙이고 팔꿈치로 몸을 지탱한 채 무릎을 가슴 쪽으로 올리며 골반을 살짝 말아줍니다. 다리를 흔들어 반동을 쓰지 말고 천천히 내리세요.' },
 };
-const DAY_ORDER = ['mon','tue','thu','sat'];
+
+/* 요일별 루틴: [운동 키, 세트, 반복] — 제공된 표 순서 그대로 */
+const DAYS = {
+  mon:{ short:'상체A', name:'상체 A', time:'08:00', type:'weight', list:[
+    ['chest_press',3,'8~12'], ['iso_row',3,'8~12'], ['lat_pull',2,'10~12'], ['shoulder_press',2,'8~12'],
+    ['lateral',3,'12~20'], ['preacher',2,'10~12'], ['pushdown',2,'10~15'] ]},
+  tue:{ short:'하체A', name:'하체 A', time:'08:00', type:'weight', list:[
+    ['leg_press',3,'8~12'], ['db_rdl',3,'8~12'], ['leg_curl',2,'10~15'], ['calf',2,'12~20'], ['cable_crunch',2,'12~15'] ]},
+  wed:{ short:'러닝', name:'러닝', time:'06:00', type:'run' },
+  thu:{ short:'상체B', name:'상체 B', time:'08:00', type:'weight', list:[
+    ['smith_incline',3,'8~12'], ['onearm_row',3,'10~12'], ['lat_pull',2,'10~12'], ['lateral',3,'12~20'],
+    ['reverse_pec',2,'12~15'], ['hammer',2,'10~12'], ['oh_ext',2,'10~15'] ]},
+  fri:{ short:'하체B', name:'하체 B', time:'08:00', type:'weight', list:[
+    ['bulgarian',2,'8~12'], ['leg_press',2,'10~12'], ['leg_curl',2,'10~15'], ['leg_ext',2,'12~15'],
+    ['calf',2,'12~20'], ['knee_raise',2,'10~15'] ]},
+  sat:{ short:'휴식', name:'휴식', type:'rest' },
+  sun:{ short:'러닝', name:'러닝', time:'06:00', type:'run' },
+};
+const DAY_ORDER = ['mon','tue','wed','thu','fri','sat','sun'];
+const WD_TO_DAY = ['sun','mon','tue','wed','thu','fri','sat'];
+const DAY_CHAR = { mon:'월', tue:'화', wed:'수', thu:'목', fri:'금', sat:'토', sun:'일' };
+const RUN_GOAL_SEC = 12*60 + 30;
+
+/* ───────── 이전 4분할 루틴 (읽기 전용) ───────── */
+const LEGACY = {
+  mon:{ label:'등·이두', uni:['m3','m6'], ex:{ m1:'랫풀다운', m2:'체스트 서포티드 로우', m3:'원암 케이블로우', m4:'스트레이트암 풀다운', m5:'프리처컬 · 케이블컬', m6:'덤벨 해머컬', m7:'케이블 크런치', m8:'플랭크(초)' }},
+  tue:{ label:'가슴·삼두', uni:[], ex:{ t1:'스미스 벤치프레스', t2:'인클라인 체스트프레스', t3:'펙덱 플라이', t4:'케이블 푸시다운', t5:'오버헤드 케이블 익스텐션' }},
+  thu:{ label:'하체', uni:['h2','h8'], ex:{ h1:'레그프레스', h2:'불가리안 스플릿 스쿼트', h3:'레그컬', h4:'스미스 루마니안 데드리프트', h5:'레그익스텐션', h6:'카프레이즈', h7:'니레이즈 · 리버스 크런치', h8:'사이드 플랭크(초)' }},
+  sat:{ label:'어깨', uni:['s2'], ex:{ s1:'머신 숄더프레스', s2:'한 손 케이블 레터럴레이즈', s3:'리버스 펙덱', s4:'랫풀다운 (보완)', s5:'인클라인 체스트프레스 (보완)', s6:'페이스풀' }},
+};
+/* 같은 운동이면 예전 기록도 새 루틴의 '지난번'으로 이어서 보여줌 */
+const LEGACY_LINK = { m1:'lat_pull', m3:'onearm_row', m5:'preacher', m6:'hammer', m7:'cable_crunch', t4:'pushdown', t5:'oh_ext',
+  h1:'leg_press', h2:'bulgarian', h3:'leg_curl', h5:'leg_ext', h6:'calf', s1:'shoulder_press', s3:'reverse_pec' };
 
 let state = { day:'mon', date: todayStr() };
+let rec = null;      // 지금 화면에 있는 기록 (저장 전까지 메모리에만 있음)
+let dirty = false;   // 저장하지 않은 변경이 있는지
+let ALL = [];        // 저장된 전체 기록 (최근 날짜 순)
 
 function todayStr(){
   const d = new Date();
@@ -313,298 +407,419 @@ function formatDateLabel(dateStr){
   return `${d.getMonth()+1}.${d.getDate()}.${week[d.getDay()]}`;
 }
 
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function shortDate(d){ const p = d.split('-'); return (+p[1])+'.'+(+p[2]); }
+function daysBetween(a,b){ return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00'))/86400000); }
+function weekdayToDay(dateStr){ return WD_TO_DAY[new Date(dateStr+'T00:00:00').getDay()]; }
+function keyFor(day, date){ return PREFIX+day+'_'+date; }
+function blankSet(){ return { w:'', r:'', r2:'', d:false }; }
+function hasVal(s){ return !!(s && (s.w || s.r || s.r2)); }
+
+function programLabel(date){
+  const n = daysBetween(PROGRAM_START, date);
+  if(n < 0) return `12주 프로그램 · ${shortDate(PROGRAM_START)} 시작 (D-${-n})`;
+  if(date > PROGRAM_END) return `12주 프로그램 완료 · ${shortDate(PROGRAM_END)} 종료`;
+  return `12주 프로그램 · ${Math.floor(n/7)+1}주차`;
+}
+
 function fmtWeight(w){
   if(!w) return '-';
   return /^[0-9.]+$/.test(w) ? w+'kg' : w;
 }
-
-function makeChip(i, ex, sv){
-  const chip = document.createElement('div');
-  chip.className = 'set-chip';
-  let labelText;
-  if(ex.uni){
-    const side = i%2===0 ? '좌' : '우';
-    const num = Math.floor(i/2)+1;
-    labelText = side+num;
-  } else {
-    labelText = 'SET '+(i+1);
+function repText(s, uni){ return uni ? `${s.r||'-'}/${s.r2||'-'}` : (s.r||'-'); }
+function fmtSets(sets, uni){
+  const ws = sets.map(s=>s.w||'');
+  if(ws.every(w=>w===ws[0])){
+    const reps = sets.map(s=>repText(s,uni)).join('·') + '회';
+    return ws[0] ? `${fmtWeight(ws[0])} × ${reps}` : reps;
   }
-  if(ex.isTime){
-    chip.innerHTML = `
-      <span class="set-chip-label">${labelText}</span>
-      <div class="field-row">
-        <input type="number" inputmode="numeric" placeholder="0" value="${sv.reps||''}" data-field="reps" data-idx="${i}">
-        <span class="unit">초</span>
-      </div>
-    `;
-  } else {
-    chip.innerHTML = `
-      <span class="set-chip-label">${labelText}</span>
-      <div class="field-row">
-        <input type="text" inputmode="decimal" placeholder="0" value="${sv.weight||''}" data-field="weight" data-idx="${i}">
-        <span class="unit">kg</span>
-      </div>
-      <div class="divider"></div>
-      <div class="field-row">
-        <input type="number" inputmode="numeric" placeholder="0" value="${sv.reps||''}" data-field="reps" data-idx="${i}">
-        <span class="unit">회</span>
-      </div>
-    `;
-  }
-  if(sv.weight || sv.reps) chip.classList.add('done');
-  chip.querySelectorAll('input').forEach(inp=>{
-    inp.addEventListener('input', ()=>{
-      if(inp.value) chip.classList.add('done'); else if(!chip.querySelector('input[data-field="weight"]')?.value && !chip.querySelector('input[data-field="reps"]')?.value) chip.classList.remove('done');
-      markDirty();
-    });
-  });
-  return chip;
+  return sets.map(s=>`${fmtWeight(s.w)}×${repText(s,uni)}`).join(' · ');
+}
+function fmtTime(totalSec){
+  const m = Math.floor(totalSec/60), s = Math.round(totalSec%60);
+  return `${m}:${String(s).padStart(2,'0')}`;
 }
 
-function copyFirstSet(ex, grid){
-  const chips = Array.from(grid.querySelectorAll('.set-chip'));
-  const groups = ex.uni
-    ? [ chips.filter((_,idx)=>idx%2===0), chips.filter((_,idx)=>idx%2===1) ]
-    : [ chips ];
-  groups.forEach(group=>{
-    if(group.length < 2) return;
-    const source = group[0];
-    const srcWeight = source.querySelector('input[data-field="weight"]');
-    const srcReps = source.querySelector('input[data-field="reps"]');
-    for(let idx=1; idx<group.length; idx++){
-      const target = group[idx];
-      const tW = target.querySelector('input[data-field="weight"]');
-      const tR = target.querySelector('input[data-field="reps"]');
-      if(srcWeight && tW) tW.value = srcWeight.value;
-      if(srcReps && tR) tR.value = srcReps.value;
-      if((tW && tW.value) || (tR && tR.value)) target.classList.add('done');
-      else target.classList.remove('done');
+/* ───────── 저장된 기록 읽기 ───────── */
+function readAll(){
+  const out = [];
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    const m = k && k.match(/^(p12|log)_([a-z]{3})_(\d{4}-\d{2}-\d{2})$/);
+    if(!m) continue;
+    let data = null;
+    try{ data = JSON.parse(localStorage.getItem(k)); }catch(e){ continue; }
+    if(data) out.push({ key:k, legacy: m[1]==='log', day:m[2], date:m[3], data });
+  }
+  return out.sort((a,b)=> b.date.localeCompare(a.date));
+}
+
+function legacySets(day, id, data){
+  const arr = data.exercises && data.exercises[id];
+  if(!Array.isArray(arr)) return [];
+  const L = LEGACY[day];
+  if(!(L && L.uni.includes(id))) return arr.map(s=>({ w:s.weight||'', r:s.reps||'', r2:'' }));
+  const out = [];
+  for(let i=0;i<arr.length;i+=2){
+    const a = arr[i]||{}, b = arr[i+1]||{};
+    out.push({ w:a.weight||b.weight||'', r:a.reps||'', r2:b.reps||'' });
+  }
+  return out;
+}
+
+/* 이 운동을 마지막으로 했던 날의 세트들 (오늘 이전, 새/예전 루틴 모두에서 찾음) */
+function lastFor(exKey, before){
+  for(const it of ALL){
+    if(it.date >= before) continue;
+    let sets = [];
+    if(!it.legacy){
+      sets = (it.data.ex && it.data.ex[exKey]) || [];
+    } else {
+      const L = LEGACY[it.day];
+      if(!L) continue;
+      for(const id in LEGACY_LINK){
+        if(LEGACY_LINK[id]===exKey && L.ex[id]){ sets = legacySets(it.day, id, it.data); break; }
+      }
     }
-  });
-  markDirty();
-}
-
-function weekdayToDay(dateStr){
-  const wd = new Date(dateStr+'T00:00:00').getDay();
-  if(wd===1) return 'mon';
-  if(wd===2) return 'tue';
-  if(wd===4) return 'thu';
-  if(wd===6) return 'sat';
+    const filled = sets.filter(hasVal);
+    if(filled.length) return { date:it.date, sets:filled };
+  }
   return null;
 }
 
-function keyFor(day, date){ return 'log_'+day+'_'+date; }
+function lastRun(before){
+  for(const it of ALL){
+    if(it.legacy || it.date >= before) continue;
+    const r = it.data.run;
+    if(r && (r.min || r.sec)) return { date:it.date, run:r };
+  }
+  return null;
+}
+
+function loadRecord(){
+  let r = null;
+  try{ r = JSON.parse(localStorage.getItem(keyFor(state.day, state.date))); }catch(e){}
+  if(!r || r.v !== 2) r = { v:2, date:state.date, day:state.day, ex:{}, run:null };
+  const day = DAYS[state.day];
+  if(day.type==='weight'){
+    r.ex = r.ex || {};
+    day.list.forEach(([k,sets])=>{
+      if(!Array.isArray(r.ex[k]) || !r.ex[k].length) r.ex[k] = Array.from({length:sets}, blankSet);
+    });
+  } else if(day.type==='run'){
+    r.run = Object.assign({ km:'', min:'', sec:'', d:false }, r.run||{});
+  }
+  return r;
+}
+
+/* ───────── 화면 그리기 ───────── */
+function setStatus(t){ document.getElementById('saveStatus').textContent = t; }
+function markDirty(){ dirty = true; setStatus('변경됨 · 저장 필요'); }
 
 function renderTabs(){
   const el = document.getElementById('dayTabs');
   el.innerHTML = '';
+  const scheduled = weekdayToDay(state.date);
   DAY_ORDER.forEach(d=>{
-    const btn = document.createElement('div');
-    btn.className = 'day-tab' + (state.day===d ? ' active' : '');
-    btn.textContent = ROUTINES[d].label.split(' · ')[1];
-    btn.onclick = ()=>{ state.day = d; loadAndRender(); };
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'day-tab' + (state.day===d ? ' active' : '') + (scheduled===d ? ' today' : '');
+    btn.setAttribute('aria-label', `${DAY_CHAR[d]}요일 ${DAYS[d].name}`);
+    btn.innerHTML = `<span class="dt-d">${DAY_CHAR[d]}</span><span class="dt-n">${DAYS[d].short}</span>`;
+    btn.onclick = async ()=>{
+      if(d===state.day) return;
+      if(!(await guardLeave())) return;
+      state.day = d;
+      loadAndRender();
+    };
     el.appendChild(btn);
   });
 }
 
-async function getLastValue(day, exId, beforeDate){
-  try{
-    const list = await storage.list('log_'+day+'_');
-    if(!list || !list.keys) return null;
-    const dates = list.keys
-      .map(k=>k.replace('log_'+day+'_',''))
-      .filter(d=>d < beforeDate)
-      .sort()
-      .reverse();
-    for(const d of dates){
-      try{
-        const r = await storage.get(keyFor(day,d));
-        if(r && r.value){
-          const data = JSON.parse(r.value);
-          const sets = data.exercises && data.exercises[exId];
-          if(sets && sets.some(s=>s.weight || s.reps)){
-            const filled = sets.filter(s=>s.weight || s.reps);
-            const last = filled[filled.length-1];
-            return { date:d, weight:last.weight, reps:last.reps };
-          }
-        }
-      }catch(e){}
-    }
-  }catch(e){}
-  return null;
+function updateProgress(){
+  const day = DAYS[state.day];
+  const wrap = document.getElementById('progress');
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  wrap.classList.toggle('is-rest', day.type==='rest');
+  if(day.type==='rest'){ fill.style.width = '0%'; text.textContent = '휴식일'; return; }
+  let done = 0, total = 0;
+  if(day.type==='weight'){
+    day.list.forEach(([k])=>{ const s = rec.ex[k]; total += s.length; done += s.filter(x=>x.d).length; });
+  } else {
+    total = 1; done = rec.run.d ? 1 : 0;
+  }
+  const pct = total ? Math.round(done/total*100) : 0;
+  fill.style.width = pct + '%';
+  text.textContent = day.type==='weight' ? `${done}/${total} 세트 · ${pct}%` : (done ? '러닝 완료 · 100%' : '러닝 전 · 0%');
 }
 
-async function renderMain(){
-  const status = document.getElementById('saveStatus');
-  status.textContent = '불러오는 중...';
-  const routine = ROUTINES[state.day];
-  let existing = { exercises:{}, cardio:'' };
-  try{
-    const r = await storage.get(keyFor(state.day, state.date));
-    if(r && r.value) existing = JSON.parse(r.value);
-  }catch(e){}
+function ph(last, i, f){
+  if(!last) return '';
+  const s = last.sets[i] || last.sets[last.sets.length-1];
+  return (s && s[f]) || '';
+}
 
+function paintChip(chip, s){
+  chip.classList.toggle('done', !!s.d);
+  chip.classList.toggle('filled', !s.d && hasVal(s));
+  chip.querySelector('.check-btn').setAttribute('aria-pressed', s.d ? 'true' : 'false');
+}
+function updateCard(card, sets){
+  card.classList.toggle('complete', sets.length>0 && sets.every(s=>s.d));
+}
+
+function makeChip(ex, sets, i, last, card){
+  const s = sets[i];
+  const chip = document.createElement('div');
+  chip.className = 'set-chip';
+  const field = (f, unit, side)=>`
+    <div class="field-row">
+      ${side ? `<span class="side">${side}</span>` : ''}
+      <input type="${f==='w'?'text':'number'}" inputmode="${f==='w'?'decimal':'numeric'}" data-f="${f}"
+        placeholder="${esc(ph(last,i,f) || '0')}" aria-label="${i+1}세트 ${side ? side+' ' : ''}${unit==='kg'?'무게':'횟수'}">
+      <span class="unit">${unit}</span>
+    </div>`;
+  chip.innerHTML = `
+    <span class="set-chip-label">SET ${i+1}</span>
+    ${field('w','kg')}
+    <div class="divider"></div>
+    ${ex.uni ? field('r','회','좌') + field('r2','회','우') : field('r','회')}
+    <button type="button" class="check-btn" aria-label="${i+1}세트 완료">✓</button>`;
+
+  chip.querySelectorAll('input').forEach(inp=>{
+    inp.value = s[inp.dataset.f] || '';
+    inp.addEventListener('input', ()=>{
+      s[inp.dataset.f] = inp.value.trim();
+      paintChip(chip, s);
+      markDirty();
+    });
+  });
+  // ✓ 를 누를 때 비어 있는 칸은 바로 앞 세트 값 → 지난번 값 순서로 채움
+  chip.querySelector('.check-btn').addEventListener('click', ()=>{
+    s.d = !s.d;
+    if(s.d){
+      ['w','r'].concat(ex.uni ? ['r2'] : []).forEach(f=>{
+        if(!s[f]) s[f] = (sets[i-1] && sets[i-1][f]) || ph(last, i, f) || '';
+      });
+      chip.querySelectorAll('input').forEach(inp=>{ inp.value = s[inp.dataset.f] || ''; });
+    }
+    paintChip(chip, s);
+    updateCard(card, sets);
+    updateProgress();
+    markDirty();
+  });
+  paintChip(chip, s);
+  return chip;
+}
+
+function renderExercise(k, planned, reps, idx){
+  const ex = EX[k];
+  const sets = rec.ex[k];
+  const last = lastFor(k, state.date);
+  const card = document.createElement('div');
+  card.className = 'ex-card';
+  const repLine = `${planned}세트 × ${reps}회${ex.uni ? ` (${ex.uniLabel})` : ''} · 휴식 ${ex.rest}`;
+  const tags = (ex.tags||[]).map(t=>`<button type="button" class="tag-btn" data-tag="${t}">전체 ${t}</button>`).join('');
+
+  card.innerHTML = `
+    <div class="ex-head">
+      <span class="ex-num">${idx+1}</span>
+      <button type="button" class="ex-title" aria-expanded="false">
+        <span class="ex-name">${esc(ex.name)} <span class="chev" aria-hidden="true">▾</span></span>
+        <span class="ex-target">${repLine}</span>
+      </button>
+      <span class="badge-done">완료</span>
+    </div>
+    ${ex.note ? `<p class="ex-note">${ex.note}</p>` : ''}
+    ${last ? `<p class="ex-last">지난번 ${shortDate(last.date)} · ${esc(fmtSets(last.sets, ex.uni))}</p>` : ''}
+    <div class="guide"><b>자세 포인트</b>${ex.guide}</div>
+    <div class="set-grid"></div>
+    <div class="set-controls">
+      <button type="button" class="ctrl-btn" data-action="remove" aria-label="세트 삭제">− 세트</button>
+      <span class="set-count"></span>
+      <button type="button" class="ctrl-btn" data-action="add" aria-label="세트 추가">+ 세트</button>
+    </div>
+    <div class="quick-tags">
+      ${tags}
+      <button type="button" class="tag-btn" data-action="copy-first">1세트 값 복사</button>
+    </div>`;
+
+  const grid = card.querySelector('.set-grid');
+  const countEl = card.querySelector('.set-count');
+  const refresh = ()=>{
+    grid.innerHTML = '';
+    sets.forEach((_, i)=> grid.appendChild(makeChip(ex, sets, i, last, card)));
+    countEl.textContent = sets.length + '세트';
+    updateCard(card, sets);
+  };
+  refresh();
+
+  const title = card.querySelector('.ex-title');
+  title.addEventListener('click', ()=>{
+    const open = card.classList.toggle('open');
+    title.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  card.querySelector('[data-action="add"]').addEventListener('click', ()=>{
+    sets.push(blankSet());
+    refresh(); updateProgress(); markDirty();
+  });
+  card.querySelector('[data-action="remove"]').addEventListener('click', ()=>{
+    if(sets.length <= 1) return;
+    sets.pop();
+    refresh(); updateProgress(); markDirty();
+  });
+  card.querySelectorAll('.tag-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(btn.dataset.action === 'copy-first'){
+        const f = sets[0];
+        sets.slice(1).forEach(s=>{ s.w = f.w; s.r = f.r; s.r2 = f.r2; });
+      } else {
+        sets.forEach(s=>{ s.w = btn.dataset.tag; });
+      }
+      refresh(); markDirty();
+    });
+  });
+  return card;
+}
+
+function renderRun(){
+  const r = rec.run;
+  const last = lastRun(state.date);
+  const card = document.createElement('div');
+  card.className = 'ex-card';
+  card.innerHTML = `
+    <div class="ex-head">
+      <div style="flex:1;min-width:0">
+        <p class="ex-name">러닝 3km</p>
+        <span class="ex-target">초기: 무리 없는 속도로 연속 완주 · 최종: 12분 30초</span>
+      </div>
+      <span class="badge-done">완료</span>
+    </div>
+    <p class="ex-note">초기에는 기록보다 호흡과 지구력 향상에 집중하세요.</p>
+    ${last ? `<p class="ex-last">지난번 ${shortDate(last.date)} · ${esc(last.run.km||'-')}km ${fmtTime((+last.run.min||0)*60 + (+last.run.sec||0))}</p>` : ''}
+    <div class="run-inputs">
+      <label class="run-field"><span>거리</span><span class="field-row"><input type="text" inputmode="decimal" data-f="km" placeholder="3"><span class="unit">km</span></span></label>
+      <label class="run-field"><span>시간</span><span class="field-row"><input type="number" inputmode="numeric" data-f="min" placeholder="0"><span class="unit">분</span></span></label>
+      <label class="run-field"><span>&nbsp;</span><span class="field-row"><input type="number" inputmode="numeric" data-f="sec" placeholder="0"><span class="unit">초</span></span></label>
+    </div>
+    <p class="run-stats"></p>
+    <button type="button" class="check-btn run-check">✓ 러닝 완료</button>`;
+
+  const stats = card.querySelector('.run-stats');
+  const paint = ()=>{
+    const km = parseFloat(r.km), t = (+r.min||0)*60 + (+r.sec||0);
+    let msg = '';
+    if(km > 0 && t > 0){
+      const pace = t/km;
+      msg = `페이스 ${Math.floor(pace/60)}'${String(Math.round(pace%60)).padStart(2,'0')}"/km`;
+      if(Math.abs(km-3) < 0.05){
+        const diff = t - RUN_GOAL_SEC;
+        msg += diff <= 0 ? ' · 목표 12:30 달성' : ` · 목표까지 ${fmtTime(diff)} 단축`;
+      }
+    }
+    stats.textContent = msg;
+    card.querySelector('.run-check').setAttribute('aria-pressed', r.d ? 'true' : 'false');
+    card.classList.toggle('complete', !!r.d);
+  };
+  card.querySelectorAll('input').forEach(inp=>{
+    inp.value = r[inp.dataset.f] || '';
+    inp.addEventListener('input', ()=>{ r[inp.dataset.f] = inp.value.trim(); paint(); markDirty(); });
+  });
+  card.querySelector('.run-check').addEventListener('click', ()=>{
+    r.d = !r.d;
+    if(r.d && !r.km){ r.km = '3'; card.querySelector('[data-f="km"]').value = '3'; }
+    paint(); updateProgress(); markDirty();
+  });
+  paint();
+  return card;
+}
+
+function renderRest(){
+  const card = document.createElement('div');
+  card.className = 'ex-card';
+  card.innerHTML = `
+    <p class="ex-name">완전 휴식</p>
+    <span class="ex-target">별도의 운동 프로그램 없음</span>
+    <p class="ex-note">다음 운동: 일요일 06:00 러닝</p>`;
+  return card;
+}
+
+function renderMain(){
   const main = document.getElementById('main');
   main.innerHTML = '';
-
-  for(const group of routine.groups){
-    const label = document.createElement('div');
-    label.className = 'section-label';
-    label.textContent = group.name;
-    main.appendChild(label);
-
-    for(const ex of group.exercises){
-      const card = document.createElement('div');
-      card.className = 'ex-card';
-      const defaultTotal = ex.uni ? ex.sets*2 : ex.sets;
-      const minTotal = ex.uni ? 2 : 1;
-      const savedSets = existing.exercises[ex.id] || Array.from({length:defaultTotal},()=>({weight:'',reps:''}));
-      let currentTotal = savedSets.length >= minTotal ? savedSets.length : minTotal;
-
-      let lastLine = '';
-      const last = await getLastValue(state.day, ex.id, state.date);
-      if(last){
-        lastLine = ex.isTime
-          ? `지난번(${last.date.slice(5)}) ${last.reps||'-'}초`
-          : `지난번(${last.date.slice(5)}) ${fmtWeight(last.weight)} × ${last.reps||'-'}회`;
-      }
-
-      card.innerHTML = `
-        <div class="ex-head">
-          <p class="ex-name">${ex.name}</p>
-        </div>
-        <p class="ex-target">${ex.sets}세트 × ${ex.reps}${ex.hint ? ' &middot; 목표 ' + ex.hint : ''}</p>
-        ${lastLine ? `<p class="ex-last">${lastLine}</p>` : ''}
-        <div class="set-grid" data-ex="${ex.id}"></div>
-        <div class="set-controls">
-          <button type="button" class="ctrl-btn" data-action="remove" aria-label="세트 삭제">− 세트</button>
-          <span class="set-count">${currentTotal}세트</span>
-          <button type="button" class="ctrl-btn" data-action="add" aria-label="세트 추가">+ 세트</button>
-        </div>
-        <div class="quick-tags">
-          ${ex.isTime ? '' : `
-          <button type="button" class="tag-btn" data-tag="맨몸">전체 맨몸</button>
-          <button type="button" class="tag-btn" data-tag="빈바">전체 빈바</button>`}
-          <button type="button" class="tag-btn" data-action="copy-first">1세트 값 복사</button>
-        </div>
-      `;
-      const grid = card.querySelector('.set-grid');
-      const countLabel = card.querySelector('.set-count');
-
-      function renderGrid(){
-        grid.innerHTML = '';
-        for(let i=0;i<currentTotal;i++){
-          const sv = savedSets[i] || {weight:'',reps:''};
-          grid.appendChild(makeChip(i, ex, sv));
-        }
-        countLabel.textContent = currentTotal + '세트';
-      }
-      renderGrid();
-
-      card.querySelector('[data-action="add"]').addEventListener('click', ()=>{
-        currentTotal += ex.uni ? 2 : 1;
-        renderGrid();
-        markDirty();
-      });
-      card.querySelector('[data-action="remove"]').addEventListener('click', ()=>{
-        const step = ex.uni ? 2 : 1;
-        if(currentTotal - step >= minTotal){
-          currentTotal -= step;
-          renderGrid();
-          markDirty();
-        }
-      });
-
-      card.querySelectorAll('.tag-btn').forEach(tagBtn=>{
-        tagBtn.addEventListener('click', ()=>{
-          if(tagBtn.dataset.action === 'copy-first'){
-            copyFirstSet(ex, grid);
-            return;
-          }
-          const tag = tagBtn.dataset.tag;
-          grid.querySelectorAll('input[data-field="weight"]').forEach(w=>{
-            w.value = tag;
-          });
-          grid.querySelectorAll('.set-chip').forEach(c=>c.classList.add('done'));
-          markDirty();
-        });
-      });
-      main.appendChild(card);
-    }
+  const day = DAYS[state.day];
+  const head = document.createElement('div');
+  head.className = 'section-label';
+  main.appendChild(head);
+  if(day.type==='weight'){
+    const total = day.list.reduce((a,[,s])=>a+s, 0);
+    head.textContent = `${day.name} · ${day.time} · ${day.list.length}종목 ${total}세트 · 운동명을 누르면 자세 안내`;
+    day.list.forEach(([k,sets,reps], idx)=> main.appendChild(renderExercise(k, sets, reps, idx)));
+  } else if(day.type==='run'){
+    head.textContent = `러닝 · ${day.time}`;
+    main.appendChild(renderRun());
+  } else {
+    head.textContent = '토요일 · 휴식';
+    main.appendChild(renderRest());
   }
-
-  if(routine.cardio){
-    const label = document.createElement('div');
-    label.className = 'section-label';
-    label.textContent = '유산소';
-    main.appendChild(label);
-    const row = document.createElement('div');
-    row.className = 'cardio-row';
-    row.innerHTML = `
-      <div>
-        <p class="ex-name" style="margin:0">${routine.cardio.name}</p>
-        <p class="ex-target">${routine.cardio.hint}</p>
-      </div>
-      <input type="number" inputmode="numeric" id="cardioInput" placeholder="분" value="${existing.cardio||''}">
-    `;
-    main.appendChild(row);
-    row.querySelector('#cardioInput').addEventListener('input', markDirty);
-  }
-
-  status.textContent = '저장하기를 눌러 기록하세요';
+  updateProgress();
 }
 
-function markDirty(){
-  document.getElementById('saveStatus').textContent = '변경됨 · 저장 필요';
-}
-
-async function saveNow(){
-  const status = document.getElementById('saveStatus');
-  const data = { date: state.date, day: state.day, exercises:{}, cardio:'' };
-  document.querySelectorAll('.set-grid').forEach(grid=>{
-    const exId = grid.dataset.ex;
-    const chips = grid.querySelectorAll('.set-chip');
-    const arr = [];
-    chips.forEach(chip=>{
-      const w = chip.querySelector('input[data-field="weight"]');
-      const r = chip.querySelector('input[data-field="reps"]');
-      arr.push({ weight: w ? w.value : '', reps: r ? r.value : '' });
-    });
-    data.exercises[exId] = arr;
-  });
-  const cardioInput = document.getElementById('cardioInput');
-  if(cardioInput) data.cardio = cardioInput.value;
-
-  try{
-    const result = await storage.set(keyFor(state.day, state.date), JSON.stringify(data));
-    status.textContent = result ? '저장됨 · ' + new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : '저장 실패';
-  }catch(e){
-    status.textContent = '저장 실패 (다시 시도해주세요)';
-  }
-}
-
-async function loadAndRender(){
+function loadAndRender(){
+  ALL = readAll();
   document.getElementById('dateBadge').textContent = formatDateLabel(state.date);
+  document.getElementById('programLabel').textContent = programLabel(state.date);
+  const saved = localStorage.getItem(keyFor(state.day, state.date)) !== null;
+  rec = loadRecord();
+  dirty = false;
   renderTabs();
-  await renderMain();
+  renderMain();
+  if(DAYS[state.day].type==='rest') setStatus('오늘은 휴식일이에요');
+  else setStatus(saved ? '저장된 기록을 불러왔어요' : '세트를 마치면 ✓ 를 누르세요');
 }
 
-document.getElementById('dateInput').addEventListener('change', (e)=>{
-  state.date = e.target.value;
-  const auto = weekdayToDay(state.date);
-  if(auto) state.day = auto;
+/* ───────── 저장 ───────── */
+async function saveNow(){
+  if(DAYS[state.day].type==='rest'){ setStatus('휴식일은 기록할 항목이 없어요'); return false; }
+  rec.date = state.date; rec.day = state.day; rec.savedAt = Date.now();
+  try{
+    await storage.set(keyFor(state.day, state.date), JSON.stringify(rec));
+    dirty = false;
+    ALL = readAll();
+    setStatus('저장됨 · ' + new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}));
+    return true;
+  }catch(e){
+    setStatus('저장 실패 (다시 시도해주세요)');
+    return false;
+  }
+}
+
+/* 저장하지 않은 채 다른 날짜·요일로 넘어가 기록이 사라지는 것을 막음 */
+async function guardLeave(){
+  if(!dirty) return true;
+  if(confirm('저장하지 않은 기록이 있어요.\n\n확인: 저장하고 이동\n취소: 이 화면에 머무르기')) return await saveNow();
+  return false;
+}
+window.addEventListener('beforeunload', e=>{ if(dirty){ e.preventDefault(); e.returnValue = ''; } });
+
+document.getElementById('dateInput').addEventListener('change', async (e)=>{
+  const v = e.target.value;
+  if(!v || !(await guardLeave())){ e.target.value = state.date; return; }
+  state.date = v;
+  state.day = weekdayToDay(v);
   loadAndRender();
 });
 
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
-  const dayLabel = ROUTINES[state.day].label.split(' · ')[1];
-  const ok = confirm(`${state.date} (${dayLabel}) 기록을 전체 초기화할까요?\n되돌릴 수 없습니다.`);
+  if(DAYS[state.day].type==='rest'){ setStatus('휴식일은 초기화할 기록이 없어요'); return; }
+  const ok = confirm(`${state.date} (${DAYS[state.day].name}) 기록을 전체 초기화할까요?\n되돌릴 수 없습니다.`);
   if(!ok) return;
-  try{
-    await storage.delete(keyFor(state.day, state.date));
-  }catch(e){}
-  await loadAndRender();
-  document.getElementById('saveStatus').textContent = '초기화됨';
+  try{ await storage.delete(keyFor(state.day, state.date)); }catch(e){}
+  loadAndRender();
+  setStatus('초기화됨');
 });
 
 // 하단 고정 바 높이만큼 페이지 아래 여백을 자동으로 맞춰서, 마지막 내용이 바 뒤에 가려지지 않게 함
@@ -618,57 +833,99 @@ document.getElementById('resetBtn').addEventListener('click', async ()=>{
   if(window.ResizeObserver) new ResizeObserver(apply).observe(bar);
 })();
 
-document.getElementById('historyToggle').addEventListener('click', async ()=>{
+/* ───────── 지난 기록 ───────── */
+function recordSummary(it){
+  const D = DAYS[it.day];
+  if(!D) return '';
+  if(D.type==='weight' && it.data.ex){
+    let done = 0, total = 0;
+    D.list.forEach(([k])=>{ const s = it.data.ex[k] || []; total += s.length; done += s.filter(x=>x.d).length; });
+    return `${done}/${total} 세트`;
+  }
+  if(D.type==='run' && it.data.run){
+    const r = it.data.run;
+    return (r.min || r.sec) ? `${r.km||'-'}km ${fmtTime((+r.min||0)*60 + (+r.sec||0))}` : (r.d ? '완료' : '');
+  }
+  return '';
+}
+
+function legacyDetail(it){
+  const L = LEGACY[it.day];
+  const div = document.createElement('div');
+  div.className = 'history-detail';
+  let rows = '';
+  if(L){
+    Object.keys(L.ex).forEach(id=>{
+      const sets = legacySets(it.day, id, it.data).filter(hasVal);
+      if(sets.length) rows += `<div class="hd-row"><span>${esc(L.ex[id])}</span><span>${esc(fmtSets(sets, L.uni.includes(id)))}</span></div>`;
+    });
+  }
+  if(it.data.cardio) rows += `<div class="hd-row"><span>러닝머신 걷기</span><span>${esc(it.data.cardio)}분</span></div>`;
+  div.innerHTML = rows || '입력된 값이 없어요.';
+  return div;
+}
+
+document.getElementById('historyToggle').addEventListener('click', ()=>{
   const listEl = document.getElementById('historyList');
   const toggle = document.getElementById('historyToggle');
-  if(listEl.style.display === 'none'){
-    listEl.style.display = 'block';
-    toggle.textContent = '지난 기록 닫기';
-    listEl.innerHTML = '<p class="empty-note">불러오는 중...</p>';
-    const headerH = document.querySelector('header').offsetHeight;
-    const top = toggle.getBoundingClientRect().top + window.scrollY - headerH - 12;
-    window.scrollTo({ top, behavior:'smooth' });
-    try{
-      let allKeys = [];
-      for(const d of DAY_ORDER){
-        const r = await storage.list('log_'+d+'_');
-        if(r && r.keys) r.keys.forEach(k=>allKeys.push({day:d, date:k.replace('log_'+d+'_','')}));
-      }
-      allKeys.sort((a,b)=> b.date.localeCompare(a.date));
-      if(allKeys.length===0){
-        listEl.innerHTML = '<p class="empty-note">아직 기록이 없어요.</p>';
-      } else {
-        listEl.innerHTML = '';
-        for(const item of allKeys.slice(0,30)){
-          const row = document.createElement('div');
-          row.className = 'history-item';
-          row.innerHTML = `<span class="d">${item.date} · ${ROUTINES[item.day].label.split(' · ')[1]}</span><span class="n">보기</span>`;
-          row.onclick = ()=>{
-            state.date = item.date;
-            state.day = item.day;
-            document.getElementById('dateInput').value = item.date;
-            listEl.style.display = 'none';
-            toggle.textContent = '지난 기록 보기';
-            loadAndRender();
-            window.scrollTo({top:0, behavior:'smooth'});
-          };
-          listEl.appendChild(row);
-        }
-      }
-    }catch(e){
-      listEl.innerHTML = '<p class="empty-note">기록을 불러오지 못했어요.</p>';
-    }
-  } else {
+  if(listEl.style.display !== 'none'){
     listEl.style.display = 'none';
     toggle.textContent = '지난 기록 보기';
+    return;
   }
+  listEl.style.display = 'block';
+  toggle.textContent = '지난 기록 닫기';
+  const sticky = document.querySelector('.sticky-bar');
+  const stickyTop = parseFloat(getComputedStyle(sticky).top) || 0;
+  const top = toggle.getBoundingClientRect().top + window.scrollY - sticky.offsetHeight - stickyTop - 12;
+  window.scrollTo({ top, behavior:'smooth' });
+
+  ALL = readAll();
+  listEl.innerHTML = '';
+  if(!ALL.length){ listEl.innerHTML = '<p class="empty-note">아직 기록이 없어요.</p>'; return; }
+  ALL.slice(0, 40).forEach(it=>{
+    const row = document.createElement('button');
+    row.type = 'button';
+    if(!it.legacy){
+      const D = DAYS[it.day];
+      if(!D) return;
+      row.className = 'history-item';
+      row.innerHTML = `<span class="d">${it.date} · ${D.name}</span><span class="n">${recordSummary(it) || '보기'}</span>`;
+      row.onclick = async ()=>{
+        if(!(await guardLeave())) return;
+        state.date = it.date;
+        state.day = it.day;
+        document.getElementById('dateInput').value = it.date;
+        listEl.style.display = 'none';
+        toggle.textContent = '지난 기록 보기';
+        loadAndRender();
+        window.scrollTo({ top:0, behavior:'smooth' });
+      };
+      listEl.appendChild(row);
+    } else {
+      const L = LEGACY[it.day];
+      row.className = 'history-item legacy';
+      row.innerHTML = `<span class="d">${it.date} · 이전 루틴 ${L ? L.label : ''}</span><span class="n">펼치기</span>`;
+      let detail = null;
+      row.onclick = ()=>{
+        if(detail){ detail.remove(); detail = null; row.querySelector('.n').textContent = '펼치기'; return; }
+        detail = legacyDetail(it);
+        row.after(detail);
+        row.querySelector('.n').textContent = '접기';
+      };
+      listEl.appendChild(row);
+    }
+  });
 });
+
+/* ───────── 백업 ───────── */
+const BACKUP_KEY = /^(p12|log)_/;
 
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const backup = {};
   for(let i=0;i<localStorage.length;i++){
     const k = localStorage.key(i);
-    if(k && k.startsWith('log_')) backup[k] = localStorage.getItem(k);
+    if(k && BACKUP_KEY.test(k)) backup[k] = localStorage.getItem(k);
   }
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
@@ -692,7 +949,7 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
       const backup = JSON.parse(reader.result);
       let count = 0;
       Object.keys(backup).forEach(k=>{
-        if(k.startsWith('log_')){ localStorage.setItem(k, backup[k]); count++; }
+        if(BACKUP_KEY.test(k)){ localStorage.setItem(k, backup[k]); count++; }
       });
       alert(count + '개의 기록을 가져왔어요.');
       loadAndRender();
@@ -708,8 +965,8 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
   btn.textContent = '저장 중...';
-  await saveNow();
-  btn.textContent = '✓ 저장됨';
+  const ok = await saveNow();
+  btn.textContent = ok ? '✓ 저장됨' : '저장하기';
   setTimeout(()=>{ btn.textContent = '저장하기'; btn.disabled = false; }, 1000);
 });
 
@@ -717,8 +974,7 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
   const today = todayStr();
   document.getElementById('dateInput').value = today;
   state.date = today;
-  const auto = weekdayToDay(today);
-  if(auto) state.day = auto;
+  state.day = weekdayToDay(today);
   loadAndRender();
 })();
 </script>
